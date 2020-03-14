@@ -44,7 +44,7 @@ func (p *Plugin) getConfiguration() *configuration {
 // setConfiguration replaces the active configuration under lock.
 //
 // Do not call setConfiguration while holding the configurationLock, as sync.Mutex is not
-// reentrant. In particular, avoid using the plugin API entirely, as this may in turn trigger a
+// re-entrant. In particular, avoid using the plugin API entirely, as this may in turn trigger a
 // hook back into the plugin. If that hook attempts to acquire this lock, a deadlock may occur.
 //
 // This method panics if setConfiguration is called with the existing configuration. This almost
