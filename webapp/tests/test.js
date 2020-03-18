@@ -1,5 +1,6 @@
 import 'mattermost-webapp/tests/setup';
 import {decrypt, encrypt, generateKeyPair} from '../src/encrypt/encrypt';
+import {getKeypair, storeKeypair} from "../src/encrypt/key_manager";
 
 test('should be decrypted same', () => {
     generateKeyPair((privateKey, publicKey) => {
@@ -18,6 +19,19 @@ test('should be decrypted same', () => {
                     expect(decrypted).toStrictEqual(test);
                 });
             });
+        });
+    });
+});
+
+test('storing key in local storage', () => {
+    generateKeyPair((privateKey, publicKey)=>{
+        const pb = publicKey;
+        const pr = privateKey;
+        storeKeypair(pr, pb, (err) => {
+            expect(err).toStrictEqual(0);
+        });
+        getKeypair((priv, pub) => {
+            expect(priv).toStrictEqual(pr);
         });
     });
 });
