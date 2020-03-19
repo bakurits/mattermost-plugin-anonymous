@@ -5,3 +5,6 @@ dist
 
 # VSCode
 .vscode
+
+# Goland
+.idea
