@@ -7,6 +7,8 @@ import (
 	"net/http"
 )
 
+const USER_ID_HEADER_KEY = "Mattermost-User-ID"
+
 type APIError struct {
 	Message    string `json:"message"`
 	StatusCode int    `json:"status_code"`
@@ -30,7 +32,7 @@ func writeSuccess(w http.ResponseWriter) {
 
 // getUserIdFromRequest reads mattermost user ID from request
 func getUserIdFromRequest(r *http.Request) (string, error) {
-	userID := r.Header.Get("Mattermost-User-ID")
+	userID := r.Header.Get(USER_ID_HEADER_KEY)
 	if userID == "" {
 		return "", errors.New("not authorized")
 	}
