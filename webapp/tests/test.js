@@ -1,6 +1,6 @@
 import 'mattermost-webapp/tests/setup';
 import {decrypt, encrypt, generateKeyPair} from '../src/encrypt/encrypt';
-import {getKeypair, storeKeypair} from '../src/encrypt/key_manager';
+import {getKeyPair, storeKeyPair} from '../src/encrypt/key_manager';
 
 test('should be decrypted same', () => {
     generateKeyPair((privateKey, publicKey) => {
@@ -28,11 +28,11 @@ test('storing key in local storage', () => {
         const pb = publicKey;
         const pr = privateKey;
         // eslint-disable-next-line max-nested-callbacks
-        storeKeypair(pr, pb, (err) => {
+        storeKeyPair(pr, pb, (err) => {
             expect(err).toStrictEqual(0);
         });
         // eslint-disable-next-line no-unused-vars,max-nested-callbacks
-        getKeypair((priv, _) => {
+        getKeyPair((priv, _) => {
             expect(priv).toStrictEqual(pr);
         });
     });
