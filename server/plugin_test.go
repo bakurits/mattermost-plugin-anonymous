@@ -14,8 +14,8 @@ import (
 
 var PUB_KEY = []byte{1, 1, 2, 3}
 
-func getFunctionalPlugin() Plugin {
-	plugin := Plugin{}
+func getFunctionalPlugin() *Plugin {
+	plugin := &Plugin{}
 	mockapi := &plugintest.API{}
 	mockapi.On("KVSet", "user_1", PUB_KEY).Return(nil)
 	mockapi.On("KVGet", "user_1").Return(PUB_KEY, nil)
