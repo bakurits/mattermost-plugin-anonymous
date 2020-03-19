@@ -43,6 +43,13 @@ func getUserIdFromRequest(r *http.Request) (string, error) {
 type APICallHandler func(p *Plugin, c *plugin.Context, w http.ResponseWriter, r *http.Request)
 
 func HandleGetPublicKey(p *Plugin, _ *plugin.Context, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		writeAPIError(w, &APIError{
+			Message:    "Wrong Http method",
+			StatusCode: http.StatusMethodNotAllowed,
+		})
+	}
+
 	userID, err := getUserIdFromRequest(r)
 	if err != nil {
 		http.Error(w, "Not Authorized", http.StatusUnauthorized)
@@ -57,20 +64,35 @@ func HandleGetPublicKey(p *Plugin, _ *plugin.Context, w http.ResponseWriter, r *
 	}
 
 	respondWithJson(w, struct {
-		PublicKey string `json:"public_key"`
+		PublicKey []byte `json:"public_key"`
 	}{PublicKey: pubKey})
 }
 
+type SetPublicKeyRequest struct {
+	PublicKey []byte `json:"public_key"`
+}
+
 func HandleSetPublicKey(p *Plugin, _ *plugin.Context, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeAPIError(w, &APIError{
+			Message:    "Wrong Http method",
+			StatusCode: http.StatusMethodNotAllowed,
+		})
+	}
+
 	userID, err := getUserIdFromRequest(r)
 	if err != nil {
 		http.Error(w, "Not Authorized", http.StatusUnauthorized)
 		return
 	}
 
-	pubKey := r.FormValue("term")
+	var request SetPublicKeyRequest
+	errno := json.NewDecoder(r.Body).Decode(&request)
+	if errno != nil {
+		writeAPIError(w, &APIError{Message: "Bad Request.", StatusCode: http.StatusBadRequest})
+	}
 
-	errno := p.storePublicKey(pubKey, userID)
+	errno = p.storePublicKey(request.PublicKey, userID)
 	if errno != nil {
 		writeAPIError(w, &APIError{Message: "Not authorized.", StatusCode: http.StatusUnauthorized})
 	}

@@ -5,8 +5,8 @@ import (
 )
 
 //store public key in plugin's KeyValue Store
-func (p *Plugin) storePublicKey(publicKey string, userId string) error {
-	pb := []byte(publicKey)
+func (p *Plugin) storePublicKey(publicKey []byte, userId string) error {
+	pb := publicKey
 	if err := p.API.KVSet(userId, pb); err != nil {
 		return errors.New(err.Message)
 	}
@@ -14,14 +14,14 @@ func (p *Plugin) storePublicKey(publicKey string, userId string) error {
 }
 
 //get public key from plugin's KeyValue Store
-func (p *Plugin) getPublicKey(userId string) (string, error) {
+func (p *Plugin) getPublicKey(userId string) ([]byte, error) {
 	userBytes, err := p.API.KVGet(userId)
 	if err != nil {
-		return "", errors.New(err.Message)
+		return nil, errors.New(err.Message)
 	}
-	publicKey := string(userBytes)
-	if publicKey == "" {
-		return "", errors.New("public key is empty")
+	publicKey := userBytes
+	if publicKey == nil || len(publicKey) == 0 {
+		return nil, errors.New("public key is empty")
 	}
 	return publicKey, nil
 }
