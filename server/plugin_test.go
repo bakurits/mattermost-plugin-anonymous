@@ -23,23 +23,6 @@ func getFunctionalPlugin() Plugin {
 	return plugin
 }
 
-func TestServeHTTP(t *testing.T) {
-	tassert := assert.New(t)
-	plugin := Plugin{}
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/", nil)
-
-	plugin.ServeHTTP(nil, w, r)
-
-	result := w.Result()
-	tassert.NotNil(result)
-	bodyBytes, err := ioutil.ReadAll(result.Body)
-	tassert.Nil(err)
-	bodyString := string(bodyBytes)
-
-	tassert.Equal("Hello, world!", bodyString)
-}
-
 //test functionality of store and get key requests
 func TestHandleGetPublicKey(t *testing.T) {
 	tassert := assert.New(t)
