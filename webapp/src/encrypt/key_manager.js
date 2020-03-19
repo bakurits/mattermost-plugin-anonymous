@@ -16,7 +16,6 @@ export function getKeyPair(callback) {
     //get public key from server
     retrievePublicKey((publicKey) => {
         const pr = Buffer.from(JSON.parse(privateKey));
-        const pb = Buffer.from(JSON.parse(publicKey));
-        callback(pr, pb);
+        callback(pr, publicKey);
     });
 }

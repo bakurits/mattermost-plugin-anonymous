@@ -9,6 +9,6 @@ export function storePublicKey(publicKey, callback) {
 export function retrievePublicKey(callback) {
     // eslint-disable-next-line no-warning-comments
     // Todo: get public key from server
-    callback(0);
+    callback([1, 1]);
 }
 
