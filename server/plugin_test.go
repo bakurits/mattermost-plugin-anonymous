@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/mattermost/mattermost-server/v5/mlog"
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest"
 	"io/ioutil"
 	"net/http"
@@ -30,7 +31,10 @@ func TestHandleGetPublicKey(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	var data bytes.Buffer
-	_ = json.NewEncoder(&data).Encode(SetPublicKeyRequest{PublicKey: PubKey})
+	err := json.NewEncoder(&data).Encode(SetPublicKeyRequest{PublicKey: PubKey})
+	if err != nil {
+		mlog.Error(err.Error())
+	}
 
 	r := httptest.NewRequest(http.MethodPost, "/api/pub_key/set", &data)
 
@@ -52,6 +56,10 @@ func TestHandleGetPublicKey(t *testing.T) {
 		PublicKey []byte `json:"public_key"`
 	}
 	var b body
-	_ = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&b)
+	err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&b)
+	if err != nil {
+		mlog.Error(err.Error())
+	}
+
 	tassert.Equal(b.PublicKey, PubKey)
 }

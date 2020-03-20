@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"github.com/mattermost/mattermost-server/v5/mlog"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 	"net/http"
 )
@@ -16,20 +17,33 @@ type APIError struct {
 	StatusCode int    `json:"status_code"`
 }
 
+func writerErrorWrapper(n int, err error) {
+	if err != nil {
+		mlog.Error(err.Error())
+	}
+}
+
 // writeAPIError writes api error as json in response
 func writeAPIError(w http.ResponseWriter, err *APIError) {
-	b, _ := json.Marshal(err)
+	b, parse_err := json.Marshal(err)
+	if parse_err != nil {
+		mlog.Error(parse_err.Error())
+		return
+	}
 	w.WriteHeader(err.StatusCode)
-	_, _ = w.Write(b)
+	writerErrorWrapper(w.Write(b))
 }
 
 func respondWithJSON(w http.ResponseWriter, data interface{}) {
-	resp, _ := json.Marshal(data)
-	_, _ = w.Write(resp)
+	resp, parse_err := json.Marshal(data)
+	if parse_err != nil {
+		mlog.Error(parse_err.Error())
+	}
+	writerErrorWrapper(w.Write(resp))
 }
 
 func writeSuccess(w http.ResponseWriter) {
-	_, _ = w.Write([]byte("{\"status\": \"OK\"}"))
+	writerErrorWrapper(w.Write([]byte("{\"status\": \"OK\"}")))
 }
 
 // getUserIDFromRequest reads mattermost user ID from request
