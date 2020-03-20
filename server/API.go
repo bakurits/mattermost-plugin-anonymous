@@ -7,10 +7,10 @@ import (
 	"net/http"
 )
 
-// key of an http header where the user id is stored
-const UserIdHeaderKey = "Mattermost-User-ID"
+// UserIDHeaderKey - key of an http header where the user id is stored
+const UserIDHeaderKey = "Mattermost-User-ID"
 
-// returned error message for api errors
+// APIError - returned error message for api errors
 type APIError struct {
 	Message    string `json:"message"`
 	StatusCode int    `json:"status_code"`
@@ -44,7 +44,7 @@ func getUserIDFromRequest(r *http.Request) (string, error) {
 // APICallHandler api call handler interface
 type APICallHandler func(p *Plugin, c *plugin.Context, w http.ResponseWriter, r *http.Request)
 
-// handle get public key request
+// HandleGetPublicKey handle get public key request
 func HandleGetPublicKey(p *Plugin, _ *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeAPIError(w, &APIError{
@@ -71,12 +71,12 @@ func HandleGetPublicKey(p *Plugin, _ *plugin.Context, w http.ResponseWriter, r *
 	}{PublicKey: pubKey})
 }
 
-// struct for parsing setPublicKey request body
+// SetPublicKeyRequest - struct for parsing setPublicKey request body
 type SetPublicKeyRequest struct {
 	PublicKey []byte `json:"public_key"`
 }
 
-// handle set public key request
+// HandleSetPublicKey - handle set public key request
 func HandleSetPublicKey(p *Plugin, _ *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeAPIError(w, &APIError{
