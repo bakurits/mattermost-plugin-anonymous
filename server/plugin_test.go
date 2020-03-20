@@ -12,13 +12,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var PUB_KEY = []byte{1, 1, 2, 3}
+var PubKey = []byte{1, 1, 2, 3}
 
 func getFunctionalPlugin() *Plugin {
 	plugin := &Plugin{}
 	mockapi := &plugintest.API{}
-	mockapi.On("KVSet", "user_1", PUB_KEY).Return(nil)
-	mockapi.On("KVGet", "user_1").Return(PUB_KEY, nil)
+	mockapi.On("KVSet", "user_1", PubKey).Return(nil)
+	mockapi.On("KVGet", "user_1").Return(PubKey, nil)
 	plugin.SetAPI(mockapi)
 	return plugin
 }
@@ -30,18 +30,18 @@ func TestHandleGetPublicKey(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	var data bytes.Buffer
-	_ = json.NewEncoder(&data).Encode(SetPublicKeyRequest{PublicKey: PUB_KEY})
+	_ = json.NewEncoder(&data).Encode(SetPublicKeyRequest{PublicKey: PubKey})
 
 	r := httptest.NewRequest(http.MethodPost, "/api/pub_key/set", &data)
 
-	r.Header.Add(USER_ID_HEADER_KEY, "user_1")
+	r.Header.Add(UserIdHeaderKey, "user_1")
 	plugin.ServeHTTP(nil, w, r)
 	wr := w.Result()
 	tassert.Equal(wr.StatusCode, 200)
 
 	w = httptest.NewRecorder()
 	r = httptest.NewRequest(http.MethodGet, "/api/pub_key/get", nil)
-	r.Header.Add(USER_ID_HEADER_KEY, "user_1")
+	r.Header.Add(UserIdHeaderKey, "user_1")
 	plugin.ServeHTTP(nil, w, r)
 	tassert.NotNil(w.Result())
 	tassert.Equal(w.Result().StatusCode, 200)
@@ -53,5 +53,5 @@ func TestHandleGetPublicKey(t *testing.T) {
 	}
 	var b body
 	_ = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&b)
-	tassert.Equal(b.PublicKey, PUB_KEY)
+	tassert.Equal(b.PublicKey, PubKey)
 }

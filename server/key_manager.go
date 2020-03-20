@@ -5,17 +5,16 @@ import (
 )
 
 //store public key in plugin's KeyValue Store
-func (p *Plugin) storePublicKey(publicKey []byte, userId string) error {
-	pb := publicKey
-	if err := p.API.KVSet(userId, pb); err != nil {
+func (p *Plugin) storePublicKey(publicKey []byte, userID string) error {
+	if err := p.API.KVSet(userID, publicKey); err != nil {
 		return errors.New(err.Message)
 	}
 	return nil
 }
 
 //get public key from plugin's KeyValue Store
-func (p *Plugin) getPublicKey(userId string) ([]byte, error) {
-	userBytes, err := p.API.KVGet(userId)
+func (p *Plugin) getPublicKey(userID string) ([]byte, error) {
+	userBytes, err := p.API.KVGet(userID)
 	if err != nil {
 		return nil, errors.New(err.Message)
 	}

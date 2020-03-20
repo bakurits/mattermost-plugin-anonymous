@@ -7,8 +7,10 @@ import (
 	"net/http"
 )
 
-const USER_ID_HEADER_KEY = "Mattermost-User-ID"
+// key of an http header where the user id is stored
+const UserIdHeaderKey = "Mattermost-User-ID"
 
+// returned error message for api errors
 type APIError struct {
 	Message    string `json:"message"`
 	StatusCode int    `json:"status_code"`
@@ -21,7 +23,7 @@ func writeAPIError(w http.ResponseWriter, err *APIError) {
 	_, _ = w.Write(b)
 }
 
-func respondWithJson(w http.ResponseWriter, data interface{}) {
+func respondWithJSON(w http.ResponseWriter, data interface{}) {
 	resp, _ := json.Marshal(data)
 	_, _ = w.Write(resp)
 }
@@ -30,9 +32,9 @@ func writeSuccess(w http.ResponseWriter) {
 	_, _ = w.Write([]byte("{\"status\": \"OK\"}"))
 }
 
-// getUserIdFromRequest reads mattermost user ID from request
-func getUserIdFromRequest(r *http.Request) (string, error) {
-	userID := r.Header.Get(USER_ID_HEADER_KEY)
+// getUserIDFromRequest reads mattermost user ID from request
+func getUserIDFromRequest(r *http.Request) (string, error) {
+	userID := r.Header.Get(UserIdHeaderKey)
 	if userID == "" {
 		return "", errors.New("not authorized")
 	}
@@ -42,6 +44,7 @@ func getUserIdFromRequest(r *http.Request) (string, error) {
 // APICallHandler api call handler interface
 type APICallHandler func(p *Plugin, c *plugin.Context, w http.ResponseWriter, r *http.Request)
 
+// handle get public key request
 func HandleGetPublicKey(p *Plugin, _ *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		writeAPIError(w, &APIError{
@@ -50,7 +53,7 @@ func HandleGetPublicKey(p *Plugin, _ *plugin.Context, w http.ResponseWriter, r *
 		})
 	}
 
-	userID, err := getUserIdFromRequest(r)
+	userID, err := getUserIDFromRequest(r)
 	if err != nil {
 		http.Error(w, "Not Authorized", http.StatusUnauthorized)
 		return
@@ -63,15 +66,17 @@ func HandleGetPublicKey(p *Plugin, _ *plugin.Context, w http.ResponseWriter, r *
 		})
 	}
 
-	respondWithJson(w, struct {
+	respondWithJSON(w, struct {
 		PublicKey []byte `json:"public_key"`
 	}{PublicKey: pubKey})
 }
 
+// struct for parsing setPublicKey request body
 type SetPublicKeyRequest struct {
 	PublicKey []byte `json:"public_key"`
 }
 
+// handle set public key request
 func HandleSetPublicKey(p *Plugin, _ *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		writeAPIError(w, &APIError{
@@ -80,7 +85,7 @@ func HandleSetPublicKey(p *Plugin, _ *plugin.Context, w http.ResponseWriter, r *
 		})
 	}
 
-	userID, err := getUserIdFromRequest(r)
+	userID, err := getUserIDFromRequest(r)
 	if err != nil {
 		http.Error(w, "Not Authorized", http.StatusUnauthorized)
 		return
