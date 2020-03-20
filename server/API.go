@@ -34,7 +34,7 @@ func writeSuccess(w http.ResponseWriter) {
 
 // getUserIDFromRequest reads mattermost user ID from request
 func getUserIDFromRequest(r *http.Request) (string, error) {
-	userID := r.Header.Get(UserIdHeaderKey)
+	userID := r.Header.Get(UserIDHeaderKey)
 	if userID == "" {
 		return "", errors.New("not authorized")
 	}

@@ -34,14 +34,14 @@ func TestHandleGetPublicKey(t *testing.T) {
 
 	r := httptest.NewRequest(http.MethodPost, "/api/pub_key/set", &data)
 
-	r.Header.Add(UserIdHeaderKey, "user_1")
+	r.Header.Add(UserIDHeaderKey, "user_1")
 	plugin.ServeHTTP(nil, w, r)
 	wr := w.Result()
 	tassert.Equal(wr.StatusCode, 200)
 
 	w = httptest.NewRecorder()
 	r = httptest.NewRequest(http.MethodGet, "/api/pub_key/get", nil)
-	r.Header.Add(UserIdHeaderKey, "user_1")
+	r.Header.Add(UserIDHeaderKey, "user_1")
 	plugin.ServeHTTP(nil, w, r)
 	tassert.NotNil(w.Result())
 	tassert.Equal(w.Result().StatusCode, 200)
