@@ -6,6 +6,7 @@ import (
 	"github.com/mattermost/mattermost-server/v5/plugin"
 )
 
+// Anonymous API for business logic
 type Anonymous interface {
 	PluginAPI
 	store.Store
@@ -20,13 +21,14 @@ type Dependencies struct {
 	store.Store
 }
 
+// Config Anonymous configuration
 type Config struct {
 	*config.Config
 	*Dependencies
 }
 
-type PluginAPI interface {
-}
+// PluginAPI API form mattermost plugin
+type PluginAPI interface{}
 
 type anonymous struct {
 	Config
@@ -34,6 +36,7 @@ type anonymous struct {
 	PluginContext          plugin.Context
 }
 
+// New retruns new Anonymous API object
 func New(apiConfig Config, mattermostUserID string, ctx plugin.Context) Anonymous {
 	return &anonymous{
 		Config:                 apiConfig,

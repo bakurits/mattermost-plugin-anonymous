@@ -1,17 +1,18 @@
 package plugin
 
 import (
+	"math/rand"
+	"net/http"
+	"reflect"
+	"sync"
+	"time"
+
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/api"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/pkg/errors"
-	"math/rand"
-	"net/http"
-	"reflect"
-	"sync"
-	"time"
 )
 
 // Plugin implements the interface expected by the Mattermost server to communicate between the server and plugin processes.
@@ -28,6 +29,7 @@ type Plugin struct {
 	config *config.Config
 }
 
+// NewWithConfig creates new plugin object from configuration
 func NewWithConfig(conf *config.Config) *Plugin {
 	return &Plugin{
 		configurationLock: &sync.RWMutex{},
@@ -37,6 +39,7 @@ func NewWithConfig(conf *config.Config) *Plugin {
 
 }
 
+// OnActivate called when plugin is activated
 func (p *Plugin) OnActivate() error {
 	rand.Seed(time.Now().UnixNano())
 	return nil

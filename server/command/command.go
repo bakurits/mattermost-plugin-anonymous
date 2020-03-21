@@ -6,6 +6,7 @@ import (
 	"github.com/mattermost/mattermost-server/v5/plugin"
 )
 
+// Command stores command specific information
 type Command struct {
 	Context   *plugin.Context
 	Args      *model.CommandArgs

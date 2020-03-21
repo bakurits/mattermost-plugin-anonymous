@@ -30,10 +30,12 @@ func (c *Config) Clone() *Config {
 
 var contextKey = Repository + "/" + fmt.Sprintf("%T", Config{})
 
+// Context sets config object in context
 func Context(ctx context.Context, conf *Config) context.Context {
 	return context.WithValue(ctx, contextKey, conf)
 }
 
+// FromContext loads context object from context
 func FromContext(ctx context.Context) *Config {
 	return ctx.Value(contextKey).(*Config)
 }

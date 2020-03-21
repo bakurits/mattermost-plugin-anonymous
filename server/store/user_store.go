@@ -4,21 +4,22 @@ import (
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
 )
 
+// UserStore API for user KVStore
 type UserStore interface {
-	LoadUser(mattermostUserId string) (*User, error)
+	LoadUser(mattermostUserID string) (*User, error)
 	StoreUser(user *User) error
-	DeleteUser(mattermostUserId string) error
+	DeleteUser(mattermostUserID string) error
 }
 
-// User specific data
+// User stores user specific data
 type User struct {
 	MattermostUserID string `json:"mattermost_user_id"`
 	PublicKey        []byte `json:"public_key"`
 }
 
-func (s *pluginStore) LoadUser(mattermostUserId string) (*User, error) {
+func (s *pluginStore) LoadUser(mattermostUserID string) (*User, error) {
 	user := &User{}
-	err := store.LoadJSON(s.userStore, mattermostUserId, user)
+	err := store.LoadJSON(s.userStore, mattermostUserID, user)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +27,7 @@ func (s *pluginStore) LoadUser(mattermostUserId string) (*User, error) {
 }
 
 func (s *pluginStore) StoreUser(user *User) error {
-	err := store.StoreJSON(s.userStore, user.MattermostUserID, user)
+	err := store.SetJSON(s.userStore, user.MattermostUserID, user)
 	if err != nil {
 		return err
 	}

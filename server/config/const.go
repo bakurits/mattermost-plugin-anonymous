@@ -1,10 +1,15 @@
 package config
 
 const (
+	// ApplicationName stores application name
 	ApplicationName = "Anonymous plugin"
-	Repository      = "mattermost-plugin-anonymous"
-	CommandTrigger  = "anonymous"
 
-	PathAPI        = "/api/v1"
-	PathPostAction = "/action"
+	// Repository stores repository
+	Repository = "mattermost-plugin-anonymous"
+
+	// CommandTrigger stores command trigger word
+	CommandTrigger = "anonymous"
+
+	// PathAPI stores api prefix
+	PathAPI = "/api/v1"
 )

@@ -2,10 +2,12 @@ package store
 
 import (
 	"encoding/json"
+
 	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/pkg/errors"
 )
 
+// KVStore abstraction for plugin.API.KVStore
 type KVStore interface {
 	Load(key string) ([]byte, error)
 	Store(key string, data []byte) error
@@ -16,8 +18,7 @@ type pluginStore struct {
 	api plugin.API
 }
 
-var ErrNotFound = errors.New("no data")
-
+// NewPluginStore creates KVStore from plugin.API
 func NewPluginStore(api plugin.API) KVStore {
 	return &pluginStore{
 		api: api,
@@ -30,7 +31,7 @@ func (s *pluginStore) Load(key string) ([]byte, error) {
 		return nil, errors.WithMessage(appErr, "failed plugin KVGet")
 	}
 	if data == nil {
-		return nil, ErrNotFound
+		return nil, errors.New("no data")
 	}
 	return data, nil
 }
@@ -51,6 +52,7 @@ func (s *pluginStore) Delete(key string) error {
 	return nil
 }
 
+// LoadJSON load json data from KVStore
 func LoadJSON(s KVStore, key string, v interface{}) (returnErr error) {
 	data, err := s.Load(key)
 	if err != nil {
@@ -59,7 +61,8 @@ func LoadJSON(s KVStore, key string, v interface{}) (returnErr error) {
 	return json.Unmarshal(data, v)
 }
 
-func StoreJSON(s KVStore, key string, v interface{}) (returnErr error) {
+// SetJSON sets json data in KVStore
+func SetJSON(s KVStore, key string, v interface{}) (returnErr error) {
 	data, err := json.Marshal(v)
 	if err != nil {
 		return err
