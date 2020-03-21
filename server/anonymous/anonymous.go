@@ -8,7 +8,7 @@ import (
 
 type Anonymous interface {
 	PluginAPI
-	store.UserStore
+	store.Store
 
 	StorePublicKey(publicKey []byte) error
 	GetPublicKey() ([]byte, error)
@@ -17,7 +17,7 @@ type Anonymous interface {
 // Dependencies contains all API dependencies
 type Dependencies struct {
 	PluginAPI
-	store.UserStore
+	store.Store
 }
 
 type Config struct {
@@ -52,7 +52,7 @@ func (a *anonymous) StorePublicKey(publicKey []byte) error {
 
 //GetPublicKey get public key from plugin's KeyValue Store
 func (a *anonymous) GetPublicKey() ([]byte, error) {
-	user, err := a.UserStore.LoadUser(a.actingMattermostUserID)
+	user, err := a.LoadUser(a.actingMattermostUserID)
 	if err != nil {
 		return nil, err
 	}

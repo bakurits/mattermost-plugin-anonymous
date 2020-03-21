@@ -1,8 +1,7 @@
 package command
 
 import (
-	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
-	anonymous "github.com/bakurits/mattermost-plugin-anonymous/server/plugin"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 )
@@ -10,9 +9,5 @@ import (
 type Command struct {
 	Context   *plugin.Context
 	Args      *model.CommandArgs
-	ChannelID string
-	Config    *config.Config
-	plugin    *anonymous.Plugin
-
-	subCommand string
+	anonymous *anonymous.Anonymous
 }

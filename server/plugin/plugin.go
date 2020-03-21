@@ -32,12 +32,12 @@ func NewWithConfig(conf *config.Config) *Plugin {
 	return &Plugin{
 		configurationLock: &sync.RWMutex{},
 		config:            conf,
+		httpHandler:       api.NewHTTPHandler(),
 	}
 
 }
 
 func (p *Plugin) OnActivate() error {
-	p.httpHandler = api.NewHTTPHandler()
 	rand.Seed(time.Now().UnixNano())
 	return nil
 }
@@ -118,7 +118,7 @@ func (p *Plugin) newAnonymousConfig() anonymous.Config {
 	return anonymous.Config{
 		Config: conf,
 		Dependencies: &anonymous.Dependencies{
-			UserStore: pluginStore,
+			Store:     pluginStore,
 			PluginAPI: p,
 		},
 	}
