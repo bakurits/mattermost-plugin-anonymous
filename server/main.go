@@ -1,9 +1,16 @@
 package main
 
 import (
-	"github.com/mattermost/mattermost-server/v5/plugin"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
+	anonymous "github.com/bakurits/mattermost-plugin-anonymous/server/plugin"
+	mattermost "github.com/mattermost/mattermost-server/v5/plugin"
 )
 
 func main() {
-	plugin.ClientMain(&Plugin{})
+	mattermost.ClientMain(
+		anonymous.NewWithConfig(
+			&config.Config{
+				PluginID:      manifest.Id,
+				PluginVersion: manifest.Version,
+			}))
 }
