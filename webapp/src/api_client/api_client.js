@@ -11,11 +11,11 @@ export default class Client {
     }
 
     storePublicKey = async (publicKey) => {
-        return this.doPost(`${this.url}/pub_key/set`, publicKey);
+        return this.doPost(`${this.url}/pub_key`, publicKey);
     };
 
     retrievePublicKey = async () => {
-        return this.doGet(`${this.url}/pub_key/get`);
+        return this.doGet(`${this.url}/pub_key`);
     };
 
     doGet = async (url, headers = {}) => {

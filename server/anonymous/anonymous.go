@@ -3,6 +3,7 @@ package anonymous
 import (
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
+	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 )
 
@@ -28,7 +29,9 @@ type Config struct {
 }
 
 // PluginAPI API form mattermost plugin
-type PluginAPI interface{}
+type PluginAPI interface {
+	SendEphemeralPost(userId string, post *model.Post) *model.Post
+}
 
 type anonymous struct {
 	Config

@@ -1,14 +1,17 @@
 package plugin
 
 import (
+	"github.com/mattermost/mattermost-server/v5/model"
 	"math/rand"
 	"net/http"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/api"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/command"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	"github.com/mattermost/mattermost-server/v5/plugin"
@@ -42,7 +45,28 @@ func NewWithConfig(conf *config.Config) *Plugin {
 // OnActivate called when plugin is activated
 func (p *Plugin) OnActivate() error {
 	rand.Seed(time.Now().UnixNano())
+	err := p.API.RegisterCommand(command.GetSlashCommand())
+	if err != nil {
+		return errors.WithMessage(err, "OnActivate: failed to register command")
+	}
 	return nil
+}
+
+// ExecuteCommand hook is called when slash command is submitted
+func (p *Plugin) ExecuteCommand(c *plugin.Context, commandArgs *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
+	mattermostUserID := commandArgs.UserId
+	if len(mattermostUserID) == 0 {
+		return &model.CommandResponse{}, &model.AppError{Message: "Not authorised"}
+	}
+
+	an := anonymous.New(p.newAnonymousConfig(), mattermostUserID, *c)
+	comm := command.NEW(commandArgs, an)
+
+	args := strings.Fields(commandArgs.Command)
+	if len(args) == 0 || args[0] != "/anonymous" {
+		return comm.Help()
+	}
+	return comm.Handle(args[1:]...)
 }
 
 // getConfiguration retrieves the active Config under lock, making it safe to use

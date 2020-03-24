@@ -1,6 +1,14 @@
 import Client from '../api_client';
 
+const eccrypto = require('eccrypto');
 const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
+
+// generates ECIES private, public key pair and executes with callback
+export function generateKeyPair(callback) {
+    const privateKey = eccrypto.generatePrivate();
+    const publicKey = eccrypto.getPublic(privateKey);
+    callback(privateKey, publicKey);
+}
 
 //store private key in a local storage
 export function storeKeyPair(privateKey, publicKey, callback) {
