@@ -62,7 +62,9 @@
     "react": "16.8.6",
     "react-redux": "5.0.7",
     "redux": "4.0.1",
-    "typescript": "3.5.3"
+    "typescript": "3.5.3",
+    "mattermost-redux": "latest",
+    "axios": "^0.19.2"
   },
   "jest": {
     "snapshotSerializers": [
