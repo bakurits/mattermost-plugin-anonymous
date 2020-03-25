@@ -3,6 +3,7 @@ module github.com/bakurits/mattermost-plugin-anonymous
 go 1.14
 
 require (
+	github.com/golang/mock v1.4.3
 	github.com/gorilla/mux v1.7.3
 	github.com/mattermost/mattermost-plugin-starter-template v0.0.0-20200320080735-5d32943c364e // indirect
 	github.com/mattermost/mattermost-server/v5 v5.20.0

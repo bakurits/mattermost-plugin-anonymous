@@ -1,8 +1,12 @@
 package store
 
 import (
+	"errors"
+	"fmt"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
 )
+
+const userStoreKeyPrefix = "user_"
 
 // UserStore API for user KVStore
 type UserStore interface {
@@ -19,7 +23,7 @@ type User struct {
 
 func (s *pluginStore) LoadUser(mattermostUserID string) (*User, error) {
 	user := &User{}
-	err := store.LoadJSON(s.userStore, mattermostUserID, user)
+	err := store.LoadJSON(s.userStore, fmt.Sprintf("%s%s", userStoreKeyPrefix, mattermostUserID), user)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +31,10 @@ func (s *pluginStore) LoadUser(mattermostUserID string) (*User, error) {
 }
 
 func (s *pluginStore) StoreUser(user *User) error {
-	err := store.SetJSON(s.userStore, user.MattermostUserID, user)
+	if user == nil {
+		return errors.New("user is nil")
+	}
+	err := store.SetJSON(s.userStore, fmt.Sprintf("%s%s", userStoreKeyPrefix, user.MattermostUserID), user)
 	if err != nil {
 		return err
 	}
@@ -35,7 +42,7 @@ func (s *pluginStore) StoreUser(user *User) error {
 }
 
 func (s *pluginStore) DeleteUser(mattermostUserID string) error {
-	err := s.userStore.Delete(mattermostUserID)
+	err := s.userStore.Delete(fmt.Sprintf("%s%s", userStoreKeyPrefix, mattermostUserID))
 	if err != nil {
 		return err
 	}
