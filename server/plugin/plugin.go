@@ -60,7 +60,7 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, commandArgs *model.CommandArg
 	}
 
 	an := anonymous.New(p.newAnonymousConfig(), mattermostUserID, *c)
-	comm := command.NEW(commandArgs, an)
+	comm := command.New(commandArgs, an)
 
 	args := strings.Fields(commandArgs.Command)
 	if len(args) == 0 || args[0] != "/anonymous" {

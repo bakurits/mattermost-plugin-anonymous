@@ -35,7 +35,7 @@ type HandlerMap struct {
 	defaultHandler HandlerFunc
 }
 
-func NEW(args *model.CommandArgs, a anonymous.Anonymous) *Command {
+func New(args *model.CommandArgs, a anonymous.Anonymous) *Command {
 	c := &Command{
 		args:      args,
 		anonymous: a,
@@ -44,7 +44,7 @@ func NEW(args *model.CommandArgs, a anonymous.Anonymous) *Command {
 	c.handler = HandlerMap{
 		handlers: map[string]HandlerFunc{
 			"help":                c.Help,
-			"keypair/--generate":  c.executeKeyPairGenearte,
+			"keypair/--generate":  c.executeKeyPairGenerate,
 			"keypair/--overwrite": c.executeKeyOverwrite,
 			"keypair/--export":    c.executeKeyExport,
 		},
@@ -64,7 +64,7 @@ func (c *Command) Handle(args ...string) (*model.CommandResponse, *model.AppErro
 	return ch.defaultHandler(args...)
 }
 
-func (c *Command) executeKeyPairGenearte(args ...string) (*model.CommandResponse, *model.AppError) {
+func (c *Command) executeKeyPairGenerate(args ...string) (*model.CommandResponse, *model.AppError) {
 	return &model.CommandResponse{}, nil
 }
 
