@@ -1,0 +1,268 @@
+package command
+
+import (
+	anonymous "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
+	mock_an "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous/mock"
+	"github.com/golang/mock/gomock"
+	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/stretchr/testify/assert"
+	"strings"
+	"testing"
+)
+
+func checkErr(tassert *assert.Assertions, wantErr bool, err error) {
+
+	if wantErr {
+		tassert.Error(err)
+	} else {
+		var noErr *model.AppError = nil
+		tassert.Equal(noErr, err)
+	}
+}
+
+func Test_command_overwrite(t *testing.T) {
+
+	ctrl := gomock.NewController(t)
+	tassert := assert.New(t)
+	a := mock_an.NewMockAnonymous(ctrl)
+	a.EXPECT().StorePublicKey(gomock.Any()).Return(nil)
+	b := mock_an.NewMockAnonymous(ctrl)
+	b.EXPECT().StorePublicKey(gomock.Any()).Return(&model.AppError{Message: "something went wrong while storing the key"})
+	defer ctrl.Finish()
+
+	type fields struct {
+		anonymous anonymous.Anonymous
+	}
+	type args struct {
+		commandArgs *model.CommandArgs
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "overwrite without args test",
+			fields: fields{
+				anonymous: a,
+			},
+			args: args{
+				commandArgs: &model.CommandArgs{
+					Command: "keypair --overwrite",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "overwrite too many args test",
+			fields: fields{
+				anonymous: a,
+			},
+			args: args{
+				commandArgs: &model.CommandArgs{
+					Command: "keypair --overwrite 1 2 3 4 5",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "overwrite with args test",
+			fields: fields{
+				anonymous: a,
+			},
+			args: args{
+				commandArgs: &model.CommandArgs{
+					Command: "keypair --overwrite 123456789123456789123456789",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "overwrite error test",
+			fields: fields{
+				anonymous: b,
+			},
+			args: args{
+				commandArgs: &model.CommandArgs{
+					Command: "keypair --overwrite 123456789123456789123456789",
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			comm := New(tt.args.commandArgs, tt.fields.anonymous)
+			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
+			checkErr(tassert, tt.wantErr, err)
+		})
+	}
+}
+func Test_command_generate(t *testing.T) {
+
+	ctrl := gomock.NewController(t)
+	tassert := assert.New(t)
+	a := mock_an.NewMockAnonymous(ctrl)
+	defer ctrl.Finish()
+
+	type fields struct {
+		anonymous anonymous.Anonymous
+	}
+	type args struct {
+		commandArgs *model.CommandArgs
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "generate keypair test",
+			fields: fields{
+				anonymous: a,
+			},
+			args: args{
+				commandArgs: &model.CommandArgs{
+					Command: "keypair --generate",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			comm := New(tt.args.commandArgs, tt.fields.anonymous)
+			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
+			checkErr(tassert, tt.wantErr, err)
+		})
+	}
+}
+func Test_command_export(t *testing.T) {
+
+	ctrl := gomock.NewController(t)
+	tassert := assert.New(t)
+	a := mock_an.NewMockAnonymous(ctrl)
+	defer ctrl.Finish()
+
+	type fields struct {
+		anonymous anonymous.Anonymous
+	}
+	type args struct {
+		commandArgs *model.CommandArgs
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "export keypair test",
+			fields: fields{
+				anonymous: a,
+			},
+			args: args{
+				commandArgs: &model.CommandArgs{
+					Command: "keypair --export",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			comm := New(tt.args.commandArgs, tt.fields.anonymous)
+			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
+			checkErr(tassert, tt.wantErr, err)
+		})
+	}
+}
+func Test_command_other(t *testing.T) {
+
+	ctrl := gomock.NewController(t)
+	tassert := assert.New(t)
+	a := mock_an.NewMockAnonymous(ctrl)
+	a.EXPECT().SendEphemeralPost(gomock.Any(), gomock.Any()).Return(nil).MaxTimes(3)
+	defer ctrl.Finish()
+
+	type fields struct {
+		anonymous anonymous.Anonymous
+	}
+	type args struct {
+		commandArgs *model.CommandArgs
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "help test",
+			fields: fields{
+				anonymous: a,
+			},
+			args: args{
+				commandArgs: &model.CommandArgs{
+					Command: "help",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "wrong command test 1",
+			fields: fields{
+				anonymous: a,
+			},
+			args: args{
+				commandArgs: &model.CommandArgs{
+					Command: "wrong command",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "wrong command test 2",
+			fields: fields{
+				anonymous: a,
+			},
+			args: args{
+				commandArgs: &model.CommandArgs{
+					Command: "keypair --wrongAction",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			comm := New(tt.args.commandArgs, tt.fields.anonymous)
+			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
+			checkErr(tassert, tt.wantErr, err)
+		})
+	}
+}
+func Test_utils(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	tassert := assert.New(t)
+	a := mock_an.NewMockAnonymous(ctrl)
+	a.EXPECT().SendEphemeralPost(gomock.Any(), gomock.Any()).Return(nil).MaxTimes(3)
+	defer ctrl.Finish()
+
+	slash := GetSlashCommand()
+	realCommand := &model.Command{
+		Trigger:          "Anonymous",
+		DisplayName:      "Anonymous",
+		Description:      "End to end message encryption",
+		AutoComplete:     true,
+		AutoCompleteDesc: "Available commands: keypair [--generate, --export, --overwrite]",
+		AutoCompleteHint: "[command][subcommands]",
+	}
+	tassert.Equal(slash, realCommand)
+
+	comm := New(&model.CommandArgs{}, a)
+	tassert.Equal(comm.responsef("occured error: %v", model.AppError{Message: "some error"}), &model.CommandResponse{})
+	tassert.Equal(comm.responseRedirect("somewhere"), &model.CommandResponse{GotoLocation: "somewhere"})
+}

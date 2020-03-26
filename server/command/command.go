@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	helpTextHeader = "###### Mattermost Anonymous Plugin - Slash Command Help\n"
+	helpTextHeader = "###### Mattermost Anonymous Plugin - Slash command Help\n"
 	helpText       = `
 * |/Anonymous help| - print this help message
 * |/Anonymous keypair [action]| - do one of the following actions regarding encryption keypair
@@ -19,14 +19,25 @@ const (
 `
 )
 
-// Command stores command specific information
-type Command struct {
+type Command interface {
+	Handle(args ...string) (*model.CommandResponse, *model.AppError)
+	Help(args ...string) (*model.CommandResponse, *model.AppError)
+	executeKeyPairGenerate(args ...string) (*model.CommandResponse, *model.AppError)
+	executeKeyOverwrite(args ...string) (*model.CommandResponse, *model.AppError)
+	executeKeyExport(args ...string) (*model.CommandResponse, *model.AppError)
+	postCommandResponse(text string)
+	responsef(format string, args ...interface{}) *model.CommandResponse
+	responseRedirect(redirectURL string) *model.CommandResponse
+}
+
+// command stores command specific information
+type command struct {
 	args      *model.CommandArgs
 	anonymous anonymous.Anonymous
 	handler   HandlerMap
 }
 
-// HandlerFunc Command handler function type
+// HandlerFunc command handler function type
 type HandlerFunc func(args ...string) (*model.CommandResponse, *model.AppError)
 
 // HandlerMap map of command handler functions
@@ -35,8 +46,8 @@ type HandlerMap struct {
 	defaultHandler HandlerFunc
 }
 
-func New(args *model.CommandArgs, a anonymous.Anonymous) *Command {
-	c := &Command{
+func New(args *model.CommandArgs, a anonymous.Anonymous) Command {
+	c := &command{
 		args:      args,
 		anonymous: a,
 	}
@@ -53,7 +64,7 @@ func New(args *model.CommandArgs, a anonymous.Anonymous) *Command {
 	return c
 }
 
-func (c *Command) Handle(args ...string) (*model.CommandResponse, *model.AppError) {
+func (c *command) Handle(args ...string) (*model.CommandResponse, *model.AppError) {
 	ch := c.handler
 	for n := len(args); n > 0; n-- {
 		h := ch.handlers[strings.Join(args[:n], "/")]
@@ -64,14 +75,19 @@ func (c *Command) Handle(args ...string) (*model.CommandResponse, *model.AppErro
 	return ch.defaultHandler(args...)
 }
 
-func (c *Command) executeKeyPairGenerate(args ...string) (*model.CommandResponse, *model.AppError) {
+func (c *command) executeKeyPairGenerate(args ...string) (*model.CommandResponse, *model.AppError) {
 	return &model.CommandResponse{}, nil
 }
 
-func (c *Command) executeKeyOverwrite(args ...string) (*model.CommandResponse, *model.AppError) {
+func (c *command) executeKeyOverwrite(args ...string) (*model.CommandResponse, *model.AppError) {
 	if len(args) > 1 {
 		return &model.CommandResponse{}, &model.AppError{
 			Message: "Too many arguments passed to e",
+		}
+	}
+	if len(args) == 0 {
+		return &model.CommandResponse{}, &model.AppError{
+			Message: "public key not passed to function",
 		}
 	}
 	pub := args[0]
@@ -84,48 +100,42 @@ func (c *Command) executeKeyOverwrite(args ...string) (*model.CommandResponse, *
 	return &model.CommandResponse{}, nil
 }
 
-func (c *Command) executeKeyExport(args ...string) (*model.CommandResponse, *model.AppError) {
+func (c *command) executeKeyExport(args ...string) (*model.CommandResponse, *model.AppError) {
 	return &model.CommandResponse{}, nil
 }
 
-func (c *Command) Help(args ...string) (*model.CommandResponse, *model.AppError) {
+func (c *command) Help(args ...string) (*model.CommandResponse, *model.AppError) {
 	helpText := helpTextHeader + helpText
-	err := c.postCommandResponse(helpText)
-	return &model.CommandResponse{}, err
+	c.postCommandResponse(helpText)
+	return &model.CommandResponse{}, nil
+}
+
+func (c *command) postCommandResponse(text string) {
+	post := &model.Post{
+		ChannelId: c.args.ChannelId,
+		Message:   text,
+	}
+	_ = c.anonymous.SendEphemeralPost(c.args.UserId, post)
+}
+
+func (c *command) responsef(format string, args ...interface{}) *model.CommandResponse {
+	c.postCommandResponse(fmt.Sprintf(format, args...))
+	return &model.CommandResponse{}
+}
+
+func (c *command) responseRedirect(redirectURL string) *model.CommandResponse {
+	return &model.CommandResponse{
+		GotoLocation: redirectURL,
+	}
 }
 
 func GetSlashCommand() *model.Command {
 	return &model.Command{
-		Trigger:          "anonymous",
+		Trigger:          "Anonymous",
 		DisplayName:      "Anonymous",
 		Description:      "End to end message encryption",
 		AutoComplete:     true,
 		AutoCompleteDesc: "Available commands: keypair [--generate, --export, --overwrite]",
 		AutoCompleteHint: "[command][subcommands]",
-	}
-}
-
-func (c *Command) postCommandResponse(text string) *model.AppError {
-	post := &model.Post{
-		ChannelId: c.args.ChannelId,
-		Message:   text,
-	}
-	err := c.anonymous.SendEphemeralPost(c.args.UserId, post)
-	if err != nil {
-		return &model.AppError{
-			Message: "could not send ephemeral post to the api",
-		}
-	}
-	return nil
-}
-
-func (c *Command) responsef(format string, args ...interface{}) (*model.CommandResponse, *model.AppError) {
-	err := c.postCommandResponse(fmt.Sprintf(format, args...))
-	return &model.CommandResponse{}, err
-}
-
-func (c *Command) responseRedirect(redirectURL string) *model.CommandResponse {
-	return &model.CommandResponse{
-		GotoLocation: redirectURL,
 	}
 }
