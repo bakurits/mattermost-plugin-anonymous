@@ -63,19 +63,23 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, commandArgs *model.CommandArg
 	an := anonymous.New(p.newAnonymousConfig(), mattermostUserID, *c)
 	comm := command.New(commandArgs, an)
 	args := strings.Fields(commandArgs.Command)
-	var commanResponse *model.CommandResponse
+	var commandResponse *model.CommandResponse
 	var err error
 	if len(args) == 0 || args[0] != "/Anonymous" {
-		commanResponse, err = comm.Help()
+		commandResponse, err = comm.Help()
 	} else {
-		commanResponse, err = comm.Handle(args[1:]...)
+		commandResponse, err = comm.Handle(args[1:]...)
+	}
+
+	if err == nil {
+		return commandResponse, nil
 	}
 
 	if appError, ok := err.(*model.AppError); ok {
-		return commanResponse, appError
+		return commandResponse, appError
 	}
 
-	return commanResponse, &model.AppError{
+	return commandResponse, &model.AppError{
 		Message: err.Error(),
 	}
 
