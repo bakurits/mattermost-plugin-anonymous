@@ -31,8 +31,8 @@ func NewHTTPHandler() *Handler {
 		Router: mux.NewRouter(),
 	}
 	apiRouter := h.Router.PathPrefix(config.PathAPI).Subrouter()
-	apiRouter.HandleFunc("/pub_key", h.handleGetPublicKey).Methods("GET")
-	apiRouter.HandleFunc("/pub_key", h.handleSetPublicKey).Methods("POST")
+	apiRouter.HandleFunc("/pub_key", h.handleGetPublicKey()).Methods("GET")
+	apiRouter.HandleFunc("/pub_key", h.handleSetPublicKey()).Methods("POST")
 	return h
 }
 
@@ -57,40 +57,47 @@ func (h *Handler) respondWithSuccess(w http.ResponseWriter) {
 }
 
 // handleGetPublicKey handle get public key request
-func (h *Handler) handleGetPublicKey(w http.ResponseWriter, r *http.Request) {
-	anonymousAPI := anonymous.FromContext(r.Context())
-	pubKey, err := anonymousAPI.GetPublicKey()
-	if err != nil {
-		h.jsonError(w, Error{
-			Message:    "public key doesn't exists",
-			StatusCode: http.StatusNoContent,
-		})
+func (h *Handler) handleGetPublicKey() http.HandlerFunc {
+
+	type response struct {
+		PublicKey []byte `json:"public_key"`
 	}
 
-	h.respondWithJSON(w, struct {
-		PublicKey []byte `json:"public_key"`
-	}{PublicKey: pubKey})
-}
+	return func(w http.ResponseWriter, r *http.Request) {
+		anonymousAPI := anonymous.FromContext(r.Context())
+		pubKey, err := anonymousAPI.GetPublicKey()
+		if err != nil {
+			h.jsonError(w, Error{
+				Message:    "public key doesn't exists",
+				StatusCode: http.StatusNoContent,
+			})
+		}
 
-// setPublicKeyRequest - struct for parsing setPublicKey request body
-type setPublicKeyRequest struct {
-	PublicKey []byte `json:"public_key"`
+		h.respondWithJSON(w, response{PublicKey: pubKey})
+	}
 }
 
 // handleSetPublicKey - handle set public key request
-func (h *Handler) handleSetPublicKey(w http.ResponseWriter, r *http.Request) {
-	anonymousAPI := anonymous.FromContext(r.Context())
+func (h *Handler) handleSetPublicKey() http.HandlerFunc {
 
-	var request setPublicKeyRequest
-	err := json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		h.jsonError(w, Error{Message: "Bad Request.", StatusCode: http.StatusBadRequest})
+	type request struct {
+		PublicKey []byte `json:"public_key"`
 	}
 
-	err = anonymousAPI.StorePublicKey(request.PublicKey)
-	if err != nil {
-		h.jsonError(w, Error{Message: "Not authorized.", StatusCode: http.StatusUnauthorized})
-	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		anonymousAPI := anonymous.FromContext(r.Context())
 
-	h.respondWithSuccess(w)
+		var req request
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			h.jsonError(w, Error{Message: "Bad Request.", StatusCode: http.StatusBadRequest})
+		}
+
+		err = anonymousAPI.StorePublicKey(req.PublicKey)
+		if err != nil {
+			h.jsonError(w, Error{Message: "Not authorized.", StatusCode: http.StatusUnauthorized})
+		}
+
+		h.respondWithSuccess(w)
+	}
 }
