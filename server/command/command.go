@@ -2,9 +2,10 @@ package command
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 	"github.com/mattermost/mattermost-server/v5/model"
-	"strings"
 )
 
 const (
@@ -19,15 +20,10 @@ const (
 `
 )
 
+// Command returns API for interacting with plugin commands
 type Command interface {
-	Handle(args ...string) (*model.CommandResponse, *model.AppError)
-	Help(args ...string) (*model.CommandResponse, *model.AppError)
-	executeKeyPairGenerate(args ...string) (*model.CommandResponse, *model.AppError)
-	executeKeyOverwrite(args ...string) (*model.CommandResponse, *model.AppError)
-	executeKeyExport(args ...string) (*model.CommandResponse, *model.AppError)
-	postCommandResponse(text string)
-	responsef(format string, args ...interface{}) *model.CommandResponse
-	responseRedirect(redirectURL string) *model.CommandResponse
+	Handle(args ...string) (*model.CommandResponse, error)
+	Help(args ...string) (*model.CommandResponse, error)
 }
 
 // command stores command specific information
@@ -38,7 +34,7 @@ type command struct {
 }
 
 // HandlerFunc command handler function type
-type HandlerFunc func(args ...string) (*model.CommandResponse, *model.AppError)
+type HandlerFunc func(args ...string) (*model.CommandResponse, error)
 
 // HandlerMap map of command handler functions
 type HandlerMap struct {
@@ -46,7 +42,7 @@ type HandlerMap struct {
 	defaultHandler HandlerFunc
 }
 
-func New(args *model.CommandArgs, a anonymous.Anonymous) Command {
+func newCommand(args *model.CommandArgs, a anonymous.Anonymous) *command {
 	c := &command{
 		args:      args,
 		anonymous: a,
@@ -64,7 +60,12 @@ func New(args *model.CommandArgs, a anonymous.Anonymous) Command {
 	return c
 }
 
-func (c *command) Handle(args ...string) (*model.CommandResponse, *model.AppError) {
+// New returns new Command with given dependencies
+func New(args *model.CommandArgs, a anonymous.Anonymous) Command {
+	return newCommand(args, a)
+}
+
+func (c *command) Handle(args ...string) (*model.CommandResponse, error) {
 	ch := c.handler
 	for n := len(args); n > 0; n-- {
 		h := ch.handlers[strings.Join(args[:n], "/")]
@@ -75,11 +76,11 @@ func (c *command) Handle(args ...string) (*model.CommandResponse, *model.AppErro
 	return ch.defaultHandler(args...)
 }
 
-func (c *command) executeKeyPairGenerate(args ...string) (*model.CommandResponse, *model.AppError) {
+func (c *command) executeKeyPairGenerate(args ...string) (*model.CommandResponse, error) {
 	return &model.CommandResponse{}, nil
 }
 
-func (c *command) executeKeyOverwrite(args ...string) (*model.CommandResponse, *model.AppError) {
+func (c *command) executeKeyOverwrite(args ...string) (*model.CommandResponse, error) {
 	if len(args) > 1 {
 		return &model.CommandResponse{}, &model.AppError{
 			Message: "Too many arguments passed to e",
@@ -100,11 +101,11 @@ func (c *command) executeKeyOverwrite(args ...string) (*model.CommandResponse, *
 	return &model.CommandResponse{}, nil
 }
 
-func (c *command) executeKeyExport(args ...string) (*model.CommandResponse, *model.AppError) {
+func (c *command) executeKeyExport(args ...string) (*model.CommandResponse, error) {
 	return &model.CommandResponse{}, nil
 }
 
-func (c *command) Help(args ...string) (*model.CommandResponse, *model.AppError) {
+func (c *command) Help(args ...string) (*model.CommandResponse, error) {
 	helpText := helpTextHeader + helpText
 	c.postCommandResponse(helpText)
 	return &model.CommandResponse{}, nil
@@ -129,6 +130,7 @@ func (c *command) responseRedirect(redirectURL string) *model.CommandResponse {
 	}
 }
 
+// GetSlashCommand returns command to register
 func GetSlashCommand() *model.Command {
 	return &model.Command{
 		Trigger:          "Anonymous",

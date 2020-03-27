@@ -1,13 +1,14 @@
 package command
 
 import (
+	"strings"
+	"testing"
+
 	anonymous "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 	mock_an "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
 )
 
 func checkErr(tassert *assert.Assertions, wantErr bool, err error) {
@@ -15,8 +16,7 @@ func checkErr(tassert *assert.Assertions, wantErr bool, err error) {
 	if wantErr {
 		tassert.Error(err)
 	} else {
-		var noErr *model.AppError = nil
-		tassert.Equal(noErr, err)
+		tassert.NoError(err)
 	}
 }
 
@@ -261,8 +261,7 @@ func Test_utils(t *testing.T) {
 		AutoCompleteHint: "[command][subcommands]",
 	}
 	tassert.Equal(slash, realCommand)
-
-	comm := New(&model.CommandArgs{}, a)
-	tassert.Equal(comm.responsef("occured error: %v", model.AppError{Message: "some error"}), &model.CommandResponse{})
+	comm := newCommand(&model.CommandArgs{}, a)
+	tassert.Equal(comm.responsef("occurred error: %v", model.AppError{Message: "some error"}), &model.CommandResponse{})
 	tassert.Equal(comm.responseRedirect("somewhere"), &model.CommandResponse{GotoLocation: "somewhere"})
 }

@@ -1,13 +1,14 @@
 package plugin
 
 import (
-	"github.com/mattermost/mattermost-server/v5/model"
 	"math/rand"
 	"net/http"
 	"reflect"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/mattermost/mattermost-server/v5/model"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/api"
@@ -56,16 +57,28 @@ func (p *Plugin) OnActivate() error {
 func (p *Plugin) ExecuteCommand(c *plugin.Context, commandArgs *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	mattermostUserID := commandArgs.UserId
 	if len(mattermostUserID) == 0 {
-		return &model.CommandResponse{}, &model.AppError{Message: "Not authorised"}
+		return &model.CommandResponse{}, &model.AppError{Message: "Not authorized"}
 	}
 
 	an := anonymous.New(p.newAnonymousConfig(), mattermostUserID, *c)
 	comm := command.New(commandArgs, an)
 	args := strings.Fields(commandArgs.Command)
+	var commanResponse *model.CommandResponse
+	var err error
 	if len(args) == 0 || args[0] != "/Anonymous" {
-		return comm.Help()
+		commanResponse, err = comm.Help()
+	} else {
+		commanResponse, err = comm.Handle(args[1:]...)
 	}
-	return comm.Handle(args[1:]...)
+
+	if appError, ok := err.(*model.AppError); ok {
+		return commanResponse, appError
+	}
+
+	return commanResponse, &model.AppError{
+		Message: err.Error(),
+	}
+
 }
 
 // getConfiguration retrieves the active Config under lock, making it safe to use
