@@ -38,6 +38,7 @@ jobs:
 
       - checkout
 
+      - run: cd webapp && npm install
       - run: cd webapp && npm run test
 
       - codecov/upload:
