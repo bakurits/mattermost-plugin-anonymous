@@ -20,7 +20,6 @@ jobs:
   test_backend:
     executor:
       name: default
-    working_directory: ~/repo/server
     steps:
 
       - checkout
@@ -35,12 +34,11 @@ jobs:
   test_frontend:
     executor:
       name: default
-    working_directory: ~/repo/webapp
     steps:
 
       - checkout
 
-      - run: npm run test
+      - run: cd webapp && npm run test
 
       - codecov/upload:
           file: "coverage.txt"
