@@ -3,11 +3,24 @@ version: 2.1
 orbs:
   codecov: codecov/codecov@volatile
 
-jobs:
-  build:
+executors:
+  default:
     docker:
       - image: circleci/golang:1.14-node
-    working_directory: ~/repo
+
+jobs:
+  lint:
+    executor:
+      name: default
+    steps:
+      - checkout
+
+      - run: make check-style
+
+  test_backend:
+    executor:
+      name: default
+    working_directory: ~/repo/server
     steps:
 
       - checkout
@@ -17,3 +30,26 @@ jobs:
 
       - codecov/upload:
           file: "coverage.txt"
+          flags: "backend"
+        
+  test_frontend:
+    executor:
+      name: default
+    working_directory: ~/repo/webapp
+    steps:
+
+      - checkout
+
+      - run: npm run test
+
+      - codecov/upload:
+          file: "coverage.txt"
+          flags: "frontend"
+
+workflows:
+  version: 2
+  untagged-build:
+    jobs:
+      - lint
+      - test_backend
+      - test_frontend
