@@ -56,15 +56,16 @@
     "webpack-cli": "3.3.5"
   },
   "dependencies": {
+    "axios": "^0.19.2",
+    "codecov": "^3.6.5",
     "core-js": "3.6.2",
     "eccrypto": "^1.1.3",
     "hybrid-crypto-js": "^0.2.2",
+    "mattermost-redux": "latest",
     "react": "16.8.6",
     "react-redux": "5.0.7",
     "redux": "4.0.1",
-    "typescript": "3.5.3",
-    "mattermost-redux": "latest",
-    "axios": "^0.19.2"
+    "typescript": "3.5.3"
   },
   "jest": {
     "snapshotSerializers": [
@@ -79,9 +80,11 @@
       "src/**/*.{js,jsx}"
     ],
     "coverageReporters": [
-      "lcov",
+      "text",
       "text-summary"
     ],
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true,
     "moduleNameMapper": {
       "^.+\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "identity-obj-proxy",
       "^.+\\.(css|less|scss)$": "identity-obj-proxy",
