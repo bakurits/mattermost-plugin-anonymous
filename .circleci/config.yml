@@ -1,27 +1,19 @@
 version: 2.1
-executors:
-  default:
-    docker:
-      - image: circleci/golang:1.14-node
+
+orbs:
+  codecov: codecov/codecov@volatile
 
 jobs:
-  lint:
-    executor:
-      name: default
+  build:
+    docker:
+      - image: circleci/golang:1.14-node
+    working_directory: ~/repo
     steps:
-      - checkout
-      - run: make check-style
 
-  test:
-    executor:
-      name: default
-    steps:
       - checkout
-      - run: make test
 
-workflows:
-  version: 2
-  untagged-build:
-    jobs:
-      - lint
-      - test
+      - run: go get -v -t -d ./...
+      - run: go test -coverprofile=coverage.txt -covermode=atomic -v ./...
+
+      - codecov/upload:
+          file: "coverage.txt"
