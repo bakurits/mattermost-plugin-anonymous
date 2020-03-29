@@ -2,7 +2,7 @@ package config
 
 import (
 	"context"
-	"fmt"
+	"reflect"
 )
 
 // Config captures the plugin's external Config as exposed in the Mattermost server
@@ -28,7 +28,7 @@ func (c *Config) Clone() *Config {
 	return &clone
 }
 
-var contextKey = Repository + "/" + fmt.Sprintf("%T", Config{})
+var contextKey = reflect.TypeOf(Config{})
 
 // Context sets config object in context
 func Context(ctx context.Context, conf *Config) context.Context {
