@@ -2,12 +2,10 @@ package anonymous
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
+	"reflect"
 )
 
-var apiContextKey = config.Repository + "/" + fmt.Sprintf("%T", anonymous{})
+var apiContextKey = reflect.TypeOf(anonymous{})
 
 // Context sets anonymous object in context
 func Context(ctx context.Context, an Anonymous) context.Context {

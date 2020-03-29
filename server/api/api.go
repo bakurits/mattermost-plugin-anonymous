@@ -20,14 +20,14 @@ type Error struct {
 	StatusCode int    `json:"status_code"`
 }
 
-// Handler is an http.Handler for all plugin HTTP endpoints
-type Handler struct {
+// handler is an http.handler for all plugin HTTP endpoints
+type handler struct {
 	*mux.Router
 }
 
 // NewHTTPHandler initializes the router.
-func NewHTTPHandler() *Handler {
-	h := &Handler{
+func NewHTTPHandler() http.Handler {
+	h := &handler{
 		Router: mux.NewRouter(),
 	}
 	apiRouter := h.Router.PathPrefix(config.PathAPI).Subrouter()
@@ -36,12 +36,12 @@ func NewHTTPHandler() *Handler {
 	return h
 }
 
-func (h *Handler) jsonError(w http.ResponseWriter, err Error) {
+func (h *handler) jsonError(w http.ResponseWriter, err Error) {
 	w.WriteHeader(err.StatusCode)
 	h.respondWithJSON(w, err)
 }
 
-func (h *Handler) respondWithJSON(w http.ResponseWriter, data interface{}) {
+func (h *handler) respondWithJSON(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(data)
 	if err != nil {
@@ -49,7 +49,7 @@ func (h *Handler) respondWithJSON(w http.ResponseWriter, data interface{}) {
 	}
 }
 
-func (h *Handler) respondWithSuccess(w http.ResponseWriter) {
+func (h *handler) respondWithSuccess(w http.ResponseWriter) {
 	_, err := w.Write([]byte("{\"status\": \"OK\"}"))
 	if err != nil {
 		mlog.Error(err.Error())
@@ -57,7 +57,7 @@ func (h *Handler) respondWithSuccess(w http.ResponseWriter) {
 }
 
 // handleGetPublicKey handle get public key request
-func (h *Handler) handleGetPublicKey() http.HandlerFunc {
+func (h *handler) handleGetPublicKey() http.HandlerFunc {
 
 	type response struct {
 		PublicKey []byte `json:"public_key"`
@@ -78,7 +78,7 @@ func (h *Handler) handleGetPublicKey() http.HandlerFunc {
 }
 
 // handleSetPublicKey - handle set public key request
-func (h *Handler) handleSetPublicKey() http.HandlerFunc {
+func (h *handler) handleSetPublicKey() http.HandlerFunc {
 
 	type request struct {
 		PublicKey []byte `json:"public_key"`

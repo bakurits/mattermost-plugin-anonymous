@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	mattermostPlugin "github.com/mattermost/mattermost-server/v5/plugin"
 	"math/rand"
 	"net/http"
 	"reflect"
@@ -15,15 +16,21 @@ import (
 	"github.com/bakurits/mattermost-plugin-anonymous/server/command"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
-	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/pkg/errors"
 )
 
-// Plugin implements the interface expected by the Mattermost server to communicate between the server and plugin processes.
-type Plugin struct {
-	plugin.MattermostPlugin
+// Plugin is interface expected by the Mattermost server to communicate between the server and plugin processes.
+type Plugin interface {
+	anonymous.PluginAPI
+	OnActivate() error
+	OnConfigurationChange() error
+	ServeHTTP(pc *mattermostPlugin.Context, w http.ResponseWriter, r *http.Request)
+}
 
-	httpHandler *api.Handler
+type plugin struct {
+	mattermostPlugin.MattermostPlugin
+
+	httpHandler http.Handler
 
 	// configurationLock synchronizes access to the configuration.
 	configurationLock *sync.RWMutex
@@ -34,8 +41,8 @@ type Plugin struct {
 }
 
 // NewWithConfig creates new plugin object from configuration
-func NewWithConfig(conf *config.Config) *Plugin {
-	return &Plugin{
+func NewWithConfig(conf *config.Config) Plugin {
+	return &plugin{
 		configurationLock: &sync.RWMutex{},
 		config:            conf,
 		httpHandler:       api.NewHTTPHandler(),
@@ -44,7 +51,7 @@ func NewWithConfig(conf *config.Config) *Plugin {
 }
 
 // OnActivate called when plugin is activated
-func (p *Plugin) OnActivate() error {
+func (p *plugin) OnActivate() error {
 	rand.Seed(time.Now().UnixNano())
 	err := p.API.RegisterCommand(command.GetSlashCommand())
 	if err != nil {
@@ -54,7 +61,7 @@ func (p *Plugin) OnActivate() error {
 }
 
 // ExecuteCommand hook is called when slash command is submitted
-func (p *Plugin) ExecuteCommand(c *plugin.Context, commandArgs *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
+func (p *plugin) ExecuteCommand(c *mattermostPlugin.Context, commandArgs *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	mattermostUserID := commandArgs.UserId
 	if len(mattermostUserID) == 0 {
 		return &model.CommandResponse{}, &model.AppError{Message: "Not authorized"}
@@ -88,7 +95,7 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, commandArgs *model.CommandArg
 // getConfiguration retrieves the active Config under lock, making it safe to use
 // concurrently. The active Config may change underneath the client of this method, but
 // the struct returned by this API call is considered immutable.
-func (p *Plugin) getConfiguration() *config.Config {
+func (p *plugin) getConfiguration() *config.Config {
 	p.configurationLock.RLock()
 	defer p.configurationLock.RUnlock()
 
@@ -108,7 +115,7 @@ func (p *Plugin) getConfiguration() *config.Config {
 // This method panics if setConfiguration is called with the existing Config. This almost
 // certainly means that the Config was modified without being cloned and may result in
 // an unsafe access.
-func (p *Plugin) setConfiguration(configuration *config.Config) {
+func (p *plugin) setConfiguration(configuration *config.Config) {
 	p.configurationLock.Lock()
 	defer p.configurationLock.Unlock()
 
@@ -127,7 +134,7 @@ func (p *Plugin) setConfiguration(configuration *config.Config) {
 }
 
 // OnConfigurationChange is invoked when Config changes may have been made.
-func (p *Plugin) OnConfigurationChange() error {
+func (p *plugin) OnConfigurationChange() error {
 	var configuration = new(config.Config)
 
 	// Load the public Config fields from the Mattermost server Config.
@@ -140,7 +147,7 @@ func (p *Plugin) OnConfigurationChange() error {
 	return nil
 }
 
-func (p *Plugin) ServeHTTP(pc *plugin.Context, w http.ResponseWriter, req *http.Request) {
+func (p *plugin) ServeHTTP(pc *mattermostPlugin.Context, w http.ResponseWriter, req *http.Request) {
 	mattermostUserID := req.Header.Get("Mattermost-User-ID")
 	if len(mattermostUserID) == 0 {
 		http.Error(w, "Not Authorized", http.StatusUnauthorized)
@@ -154,7 +161,7 @@ func (p *Plugin) ServeHTTP(pc *plugin.Context, w http.ResponseWriter, req *http.
 	p.httpHandler.ServeHTTP(w, req.WithContext(ctx))
 }
 
-func (p *Plugin) newAnonymousConfig() anonymous.Config {
+func (p *plugin) newAnonymousConfig() anonymous.Config {
 	conf := p.getConfiguration()
 	pluginStore := store.NewPluginStore(p.API)
 

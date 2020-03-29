@@ -1,32 +1,24 @@
 package command
 
 import (
+	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/test"
 	"strings"
 	"testing"
 
-	anonymous "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
-	mock_an "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous/mock"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
+	mockAnonymous "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/stretchr/testify/assert"
 )
 
-func checkErr(tassert *assert.Assertions, wantErr bool, err error) {
-
-	if wantErr {
-		tassert.Error(err)
-	} else {
-		tassert.NoError(err)
-	}
-}
-
 func Test_command_overwrite(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	a := mock_an.NewMockAnonymous(ctrl)
+	a := mockAnonymous.NewMockAnonymous(ctrl)
 	a.EXPECT().StorePublicKey(gomock.Any()).Return(nil)
-	b := mock_an.NewMockAnonymous(ctrl)
+	b := mockAnonymous.NewMockAnonymous(ctrl)
 	b.EXPECT().StorePublicKey(gomock.Any()).Return(&model.AppError{Message: "something went wrong while storing the key"})
 	defer ctrl.Finish()
 
@@ -95,7 +87,7 @@ func Test_command_overwrite(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			comm := New(tt.args.commandArgs, tt.fields.anonymous)
 			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
-			checkErr(tassert, tt.wantErr, err)
+			test.CheckErr(tassert, tt.wantErr, err)
 		})
 	}
 }
@@ -103,7 +95,7 @@ func Test_command_generate(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	a := mock_an.NewMockAnonymous(ctrl)
+	a := mockAnonymous.NewMockAnonymous(ctrl)
 	defer ctrl.Finish()
 
 	type fields struct {
@@ -135,7 +127,7 @@ func Test_command_generate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			comm := New(tt.args.commandArgs, tt.fields.anonymous)
 			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
-			checkErr(tassert, tt.wantErr, err)
+			test.CheckErr(tassert, tt.wantErr, err)
 		})
 	}
 }
@@ -143,7 +135,7 @@ func Test_command_export(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	a := mock_an.NewMockAnonymous(ctrl)
+	a := mockAnonymous.NewMockAnonymous(ctrl)
 	defer ctrl.Finish()
 
 	type fields struct {
@@ -175,7 +167,7 @@ func Test_command_export(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			comm := New(tt.args.commandArgs, tt.fields.anonymous)
 			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
-			checkErr(tassert, tt.wantErr, err)
+			test.CheckErr(tassert, tt.wantErr, err)
 		})
 	}
 }
@@ -183,7 +175,7 @@ func Test_command_other(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	a := mock_an.NewMockAnonymous(ctrl)
+	a := mockAnonymous.NewMockAnonymous(ctrl)
 	a.EXPECT().SendEphemeralPost(gomock.Any(), gomock.Any()).Return(nil).MaxTimes(3)
 	defer ctrl.Finish()
 
@@ -240,14 +232,14 @@ func Test_command_other(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			comm := New(tt.args.commandArgs, tt.fields.anonymous)
 			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
-			checkErr(tassert, tt.wantErr, err)
+			test.CheckErr(tassert, tt.wantErr, err)
 		})
 	}
 }
 func Test_utils(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	a := mock_an.NewMockAnonymous(ctrl)
+	a := mockAnonymous.NewMockAnonymous(ctrl)
 	a.EXPECT().SendEphemeralPost(gomock.Any(), gomock.Any()).Return(nil).MaxTimes(3)
 	defer ctrl.Finish()
 

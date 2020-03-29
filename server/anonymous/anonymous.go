@@ -39,7 +39,7 @@ type anonymous struct {
 	PluginContext          plugin.Context
 }
 
-// New retruns new Anonymous API object
+// New returns new Anonymous API object
 func New(apiConfig Config, mattermostUserID string, ctx plugin.Context) Anonymous {
 	return &anonymous{
 		Config:                 apiConfig,

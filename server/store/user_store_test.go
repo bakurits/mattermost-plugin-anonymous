@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
-	mock_store "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store/mock"
+	mockStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store/mock"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/test"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"strings"
@@ -30,20 +31,11 @@ func (s stringLikeMatcher) String() string {
 	return fmt.Sprintf("should match with strings containging ()")
 }
 
-func checkErr(tassert *assert.Assertions, wantErr bool, err error) {
-
-	if wantErr {
-		tassert.Error(err)
-	} else {
-		tassert.NoError(err)
-	}
-}
-
 func Test_pluginStore_DeleteUser(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	m := mock_store.NewMockKVStore(ctrl)
+	m := mockStore.NewMockKVStore(ctrl)
 	m.EXPECT().Delete(stringLikeMatcher("key_in")).Return(nil)
 	m.EXPECT().Delete(gomock.Not(stringLikeMatcher("key_in"))).Return(errors.New("no data"))
 
@@ -89,7 +81,7 @@ func Test_pluginStore_DeleteUser(t *testing.T) {
 			}
 
 			err := s.DeleteUser(tt.args.mattermostUserID)
-			checkErr(tassert, tt.wantErr, err)
+			test.CheckErr(tassert, tt.wantErr, err)
 		})
 	}
 }
@@ -98,7 +90,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	m := mock_store.NewMockKVStore(ctrl)
+	m := mockStore.NewMockKVStore(ctrl)
 	dt, _ := json.Marshal(User{
 		MattermostUserID: "key_in",
 		PublicKey:        []byte{1},
@@ -164,7 +156,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 				userStore: tt.fields.userStore,
 			}
 			got, err := s.LoadUser(tt.args.mattermostUserID)
-			checkErr(tassert, tt.wantErr, err)
+			test.CheckErr(tassert, tt.wantErr, err)
 
 			tassert.Equal(tt.want, got, "returned users must be the same")
 		})
@@ -175,7 +167,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	m := mock_store.NewMockKVStore(ctrl)
+	m := mockStore.NewMockKVStore(ctrl)
 
 	m.EXPECT().Store(stringLikeMatcher("user_1"), gomock.Any()).Return(nil)
 	m.EXPECT().Store(stringLikeMatcher("cant_store"), gomock.Any()).Return(errors.New("failed plugin KVSet"))
@@ -236,7 +228,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 			}
 
 			err := s.StoreUser(tt.args.user)
-			checkErr(tassert, tt.wantErr, err)
+			test.CheckErr(tassert, tt.wantErr, err)
 		})
 	}
 }
