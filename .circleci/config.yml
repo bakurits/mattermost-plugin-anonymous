@@ -40,10 +40,7 @@ jobs:
 
       - run: cd webapp && npm install
       - run: cd webapp && npm run test
-
-      - codecov/upload:
-          file: "webapp/coverage.txt"
-          flags: "frontend"
+      - run: cd webapp && ./node_modules/.bin/codecov --token="70f776e0-e906-4555-be32-f1c886c07469" -F frontend
 
 workflows:
   version: 2
