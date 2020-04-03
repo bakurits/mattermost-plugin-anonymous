@@ -14,8 +14,8 @@ export async function generateKeyPair() {
 export async function storeKeyPair(privateKey, publicKey) {
     const pr = JSON.stringify(Array.from(privateKey));
     localStorage.setItem(LOCAL_STORAGE_KEY, pr);
-    const response = await Client.storePublicKey(publicKey)
-    return response
+    const response = await Client.storePublicKey(publicKey);
+    return response;
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -23,7 +23,7 @@ export async function getKeyPair() {
     const privateKey = localStorage.getItem(LOCAL_STORAGE_KEY);
 
     //get public key from server
-    const publicKey = await Client.retrievePublicKey()
+    const publicKey = await Client.retrievePublicKey();
     const pr = Buffer.from(JSON.parse(privateKey));
-    return [pr, publicKey]
+    return [pr, publicKey];
 }
