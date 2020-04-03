@@ -12,7 +12,7 @@ export default class Client {
     }
 
     storePublicKey = async (publicKey) => {
-        return this.doPost(`${this.url}/pub_key`, {public_key: publicKey});
+        return this.doPost(`${this.url}/pub_key`, {public_key: Array.from(publicKey)});
     };
 
     retrievePublicKey = async () => {
@@ -20,41 +20,42 @@ export default class Client {
     };
 
     doGet = async (url, headers = {}) => {
+        // eslint-disable-next-line no-console
+        console.log('doget!!!  ');
+        const opts = Client4.getOptions(headers);
         const options = {
-            headers,
+            headers: opts.headers,
+            withCredentials: opts.credentials === 'include',
         };
-        Axios.get(url, Client4.getOptions(options)).then(async (response) => {
-            if (response.status === STATUS_OK) {
-                return response.data;
-            }
+        const response = await Axios.get(url, options);
+        if (response.status === STATUS_OK) {
+            return response.data;
+        }
 
-            throw new ClientError(Client4.url, {
-                message: response.statusText || '',
-                status_code: response.status,
-                url,
-            });
+        throw new ClientError(Client4.url, {
+            message: response.statusText || '',
+            status_code: response.status,
+            url,
         });
     };
 
     doPost = async (url, body, headers = {}) => {
-        const options = {
-            headers,
-        };
         // eslint-disable-next-line no-console
         console.log('dopost!!!  ');
+        const opts = Client4.getOptions(headers);
+        const options = {
+            headers: opts.headers,
+            withCredentials: opts.credentials === 'include',
+        };
+        const response = await Axios.post(url, body, options);
+        if (response.status === STATUS_OK) {
+            return response.data;
+        }
 
-        Axios.post(url, body, Client4.getOptions(options)).then(async (response) => {
-            // eslint-disable-next-line no-console
-            console.log('axios  ', response);
-            if (response.status === STATUS_OK) {
-                return response.data;
-            }
-
-            throw new ClientError(Client4.url, {
-                message: response.statusText || '',
-                status_code: response.status,
-                url,
-            });
+        throw new ClientError(Client4.url, {
+            message: response.statusText || '',
+            status_code: response.status,
+            url,
         });
     };
 }

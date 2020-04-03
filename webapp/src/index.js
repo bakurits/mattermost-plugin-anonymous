@@ -9,8 +9,6 @@ async function handleKeyPair(commands, args) {
         response = await generateAndStoreKeypair();
         // eslint-disable-next-line no-console
         console.log(response);
-        // eslint-disable-next-line no-console
-        console.log('code ', response.code);
         break;
     case '--overwrite':
         break;
