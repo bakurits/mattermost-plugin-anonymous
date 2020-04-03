@@ -4,28 +4,26 @@ const eccrypto = require('eccrypto');
 const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
 
 // generates ECIES private, public key pair and executes with callback
-export function generateKeyPair(callback) {
+export async function generateKeyPair() {
     const privateKey = eccrypto.generatePrivate();
     const publicKey = eccrypto.getPublic(privateKey);
-    callback(privateKey, publicKey);
+    return [privateKey, publicKey];
 }
 
 //store private key in a local storage
-export function storeKeyPair(privateKey, publicKey, callback) {
+export async function storeKeyPair(privateKey, publicKey) {
     const pr = JSON.stringify(Array.from(privateKey));
     localStorage.setItem(LOCAL_STORAGE_KEY, pr);
-    Client.storePublicKey(publicKey).then((response) => {
-        callback(response);
-    });
+    const response = await Client.storePublicKey(publicKey)
+    return response
 }
 
 // eslint-disable-next-line no-unused-vars
-export function getKeyPair(callback) {
+export async function getKeyPair() {
     const privateKey = localStorage.getItem(LOCAL_STORAGE_KEY);
 
     //get public key from server
-    Client.retrievePublicKey().then((publicKey) => {
-        const pr = Buffer.from(JSON.parse(privateKey));
-        callback(pr, publicKey);
-    });
+    const publicKey = await Client.retrievePublicKey()
+    const pr = Buffer.from(JSON.parse(privateKey));
+    return [pr, publicKey]
 }

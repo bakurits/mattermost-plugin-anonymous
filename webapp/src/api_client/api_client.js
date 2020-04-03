@@ -7,7 +7,7 @@ const STATUS_OK = 200;
 
 export default class Client {
     constructor() {
-        this.url = '/plugins/anonymous/api';
+        this.url = '/plugins/anonymous/api/v1';
     }
 
     storePublicKey = async (publicKey) => {
@@ -42,8 +42,11 @@ export default class Client {
             body,
             headers,
         };
+        console.log('dopost!!!  ')
+
 
         Axios.get(url, Client4.getOptions(options)).then(async (response) => {
+            console.log('axios  ', response)
             if (response.status === STATUS_OK) {
                 return response.data;
             }
@@ -55,19 +58,5 @@ export default class Client {
             });
         });
     };
-}
-
-//store public key on server
-export function storePublicKey(publicKey, callback) {
-    // eslint-disable-next-line no-warning-comments
-    // Todo: post a request to server to store public key
-    callback(0);
-}
-
-//retrieve public key from server
-export function retrievePublicKey(callback) {
-    // eslint-disable-next-line no-warning-comments
-    // Todo: get public key from server
-    callback([1, 1]);
 }
 
