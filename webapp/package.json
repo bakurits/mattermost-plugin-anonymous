@@ -81,7 +81,8 @@
     ],
     "coverageReporters": [
       "text",
-      "text-summary"
+      "text-summary",
+      "lcov"
     ],
     "coverageDirectory": "./coverage/",
     "collectCoverage": true,
