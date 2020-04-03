@@ -1,18 +1,12 @@
 import manifest from './manifest';
-import {generateKeyPair, storeKeyPair} from './encrypt/key_manager';
+import {generateKeyPair} from './encrypt/key_manager';
 
 // eslint-disable-next-line no-unused-vars
 async function handleKeyPair(commands, args) {
+    let response;
     switch (commands[0]) {
     case '--generate':
-        // eslint-disable-next-line no-case-declarations
-        const keys = await generateKeyPair();
-        // eslint-disable-next-line no-case-declarations
-        const privateKey = keys[0];
-        // eslint-disable-next-line no-case-declarations
-        const publicKey = keys[1];
-        // eslint-disable-next-line no-case-declarations
-        const response = await storeKeyPair(privateKey, publicKey);
+        response = await generateKeyPair();
         // eslint-disable-next-line no-console
         console.log(response);
         // eslint-disable-next-line no-console

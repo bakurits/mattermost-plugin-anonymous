@@ -7,15 +7,14 @@ const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
 export async function generateKeyPair() {
     const privateKey = eccrypto.generatePrivate();
     const publicKey = eccrypto.getPublic(privateKey);
-    return [privateKey, publicKey];
+    return storeKeyPair(privateKey, publicKey);
 }
 
 //store private key in a local storage
 export async function storeKeyPair(privateKey, publicKey) {
     const pr = JSON.stringify(Array.from(privateKey));
     localStorage.setItem(LOCAL_STORAGE_KEY, pr);
-    const response = await Client.storePublicKey(publicKey);
-    return response;
+    return Client.storePublicKey(publicKey);
 }
 
 // eslint-disable-next-line no-unused-vars
