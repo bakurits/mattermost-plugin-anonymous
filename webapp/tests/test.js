@@ -2,7 +2,6 @@ import 'mattermost-webapp/tests/setup';
 import {decrypt, encrypt} from '../src/encrypt/encrypt';
 import {generateKeyPair} from '../src/encrypt/key_manager';
 
-
 test('should be decrypted same', async () => {
     const response = await generateKeyPair();
     const pb = response[0];
