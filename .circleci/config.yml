@@ -42,8 +42,8 @@ jobs:
       - run: cd webapp && npm run test
 
       - codecov/upload:
-        file: "./webapp/coverage/lcov.info"
-        flags: "frontend"
+          file: "webapp/coverage/lcov.info"
+          flags: "frontend"
 
 workflows:
   version: 2
