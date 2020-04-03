@@ -4,10 +4,16 @@ const eccrypto = require('eccrypto');
 const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
 
 // generates ECIES private, public key pair and executes with callback
-export async function generateKeyPair() {
+export function generateKeyPair() {
     const privateKey = eccrypto.generatePrivate();
     const publicKey = eccrypto.getPublic(privateKey);
-    return [await storeKeyPair(privateKey, publicKey), privateKey, publicKey];
+    return [privateKey, publicKey];
+}
+
+// generates and stores private and public keys
+export async function generateAndStoreKeypair() {
+    const keys = generateKeyPair();
+    return storeKeyPair(keys[0], keys[1]);
 }
 
 //store private key in a local storage

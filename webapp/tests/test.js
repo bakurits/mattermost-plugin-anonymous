@@ -2,10 +2,10 @@ import 'mattermost-webapp/tests/setup';
 import {decrypt, encrypt} from '../src/encrypt/encrypt';
 import {generateKeyPair} from '../src/encrypt/key_manager';
 
-test('should be decrypted same', async () => {
-    const response = await generateKeyPair();
-    const pb = response[0];
-    const pr = response[0];
+test('should be decrypted same', () => {
+    const keys = generateKeyPair();
+    const pr = keys[0];
+    const pb = keys[1];
 
     // eslint-disable-next-line no-magic-numbers
     const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
