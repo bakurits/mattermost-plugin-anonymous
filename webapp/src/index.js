@@ -3,10 +3,12 @@ import {generateKeyPair} from './encrypt/key_manager';
 
 // eslint-disable-next-line no-unused-vars
 async function handleKeyPair(commands, args) {
+    let generateReturn;
     let response;
     switch (commands[0]) {
     case '--generate':
-        response = await generateKeyPair();
+        generateReturn = await generateKeyPair();
+        response = generateReturn[0];
         // eslint-disable-next-line no-console
         console.log(response);
         // eslint-disable-next-line no-console

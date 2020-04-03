@@ -21,7 +21,6 @@ export default class Client {
 
     doGet = async (url, headers = {}) => {
         const options = {
-            method: 'get',
             headers,
         };
         Axios.get(url, Client4.getOptions(options)).then(async (response) => {
@@ -39,14 +38,12 @@ export default class Client {
 
     doPost = async (url, body, headers = {}) => {
         const options = {
-            method: 'post',
-            body,
             headers,
         };
         // eslint-disable-next-line no-console
         console.log('dopost!!!  ');
 
-        Axios.get(url, Client4.getOptions(options)).then(async (response) => {
+        Axios.post(url, body, Client4.getOptions(options)).then(async (response) => {
             // eslint-disable-next-line no-console
             console.log('axios  ', response);
             if (response.status === STATUS_OK) {

@@ -1,41 +1,39 @@
 import 'mattermost-webapp/tests/setup';
 import {decrypt, encrypt} from '../src/encrypt/encrypt';
-import {getKeyPair, storeKeyPair, generateKeyPair} from '../src/encrypt/key_manager';
+import {generateKeyPair} from '../src/encrypt/key_manager';
 
-test('should be decrypted same', () => {
-    generateKeyPair((privateKey, publicKey) => {
-        const pb = publicKey;
-        const pr = privateKey;
 
-        // eslint-disable-next-line no-magic-numbers
-        const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
+test('should be decrypted same', async () => {
+    const response = await generateKeyPair();
+    const pb = response[0];
+    const pr = response[0];
 
+    // eslint-disable-next-line no-magic-numbers
+    const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
+
+    // eslint-disable-next-line max-nested-callbacks
+    testsInput.forEach((test) => {
         // eslint-disable-next-line max-nested-callbacks
-        testsInput.forEach((test) => {
+        encrypt(pb, test, (encrypted) => {
             // eslint-disable-next-line max-nested-callbacks
-            encrypt(pb, test, (encrypted) => {
-                // eslint-disable-next-line max-nested-callbacks
-                decrypt(pr, encrypted, (decrypted) => {
-                    expect(decrypted).toStrictEqual(test);
-                });
+            decrypt(pr, encrypted, (decrypted) => {
+                expect(decrypted).toStrictEqual(test);
             });
         });
     });
 });
 
-test('storing key in local storage', () => {
-    generateKeyPair((privateKey, publicKey) => {
-        const pb = publicKey;
-        const pr = privateKey;
-        // eslint-disable-next-line max-nested-callbacks
-        storeKeyPair(pr, pb, (response) => {
-            // nothing should be returned while the server is down
-            // eslint-disable-next-line no-undefined
-            expect(response).toEqual(undefined);
-        });
-        // eslint-disable-next-line no-unused-vars,max-nested-callbacks
-        getKeyPair((priv, _) => {
-            expect(priv).toStrictEqual(pr);
-        });
-    });
-});
+//
+// test('storing key in local storage', async () => {
+//     const generateReturn = await generateKeyPair();
+//     const response = generateReturn[0];
+//     const pr = generateReturn[0];
+//     const pb = generateReturn[0];
+//     expect(response.status).toEqual(STATUS_OK);
+//
+//     const keys = await getKeyPair();
+//     const priv = keys[0];
+//     const pub = keys[1];
+//     expect(priv).toStrictEqual(pr);
+//     expect(pub).toStrictEqual(pb);
+// });
