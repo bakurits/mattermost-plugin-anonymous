@@ -12,7 +12,7 @@ export default class Client {
     }
 
     storePublicKey = async (publicKey) => {
-        return this.doPost(`${this.url}/pub_key`, {public_key: Array.from(publicKey)});
+        return this.doPost(`${this.url}/pub_key`, {public_key: publicKey.toString('base64')});
     };
 
     retrievePublicKey = async () => {
@@ -28,6 +28,8 @@ export default class Client {
             withCredentials: opts.credentials === 'include',
         };
         const response = await Axios.get(url, options);
+        // eslint-disable-next-line no-console
+        console.log(response);
         if (response.status === STATUS_OK) {
             return response.data;
         }

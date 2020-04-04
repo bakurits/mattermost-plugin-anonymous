@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	mockPlugin "github.com/bakurits/mattermost-plugin-anonymous/server/plugin/mock"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	mockStore "github.com/bakurits/mattermost-plugin-anonymous/server/store/mock"
@@ -59,7 +60,7 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 
 	storeMock.EXPECT().LoadUser(stringLikeMatcher("user_in")).Return(&store.User{
 		MattermostUserID: "user_in",
-		PublicKey:        []byte{1, 1, 1},
+		PublicKey:        crypto.PublicKey([]byte{1, 1, 1}),
 	}, nil)
 
 	storeMock.EXPECT().LoadUser(gomock.Not(stringLikeMatcher("user_in"))).Return(nil, errors.New("some error"))
@@ -75,7 +76,7 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []byte
+		want    crypto.PublicKey
 		wantErr bool
 	}{
 		{
@@ -91,7 +92,7 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 				actingMattermostUserID: "user_in",
 				PluginContext:          plugin.Context{},
 			},
-			want:    []byte{1, 1, 1},
+			want:    crypto.PublicKey([]byte{1, 1, 1}),
 			wantErr: false,
 		},
 		{
@@ -116,7 +117,7 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 			a := New(tt.fields.Config, tt.fields.actingMattermostUserID, tt.fields.PluginContext)
 			got, err := a.GetPublicKey()
 			test.CheckErr(tassert, tt.wantErr, err)
-			tassert.Equal(got, tt.want)
+			tassert.Equal(tt.want, got)
 		})
 	}
 }

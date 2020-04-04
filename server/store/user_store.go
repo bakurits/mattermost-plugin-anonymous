@@ -3,6 +3,7 @@ package store
 import (
 	"errors"
 	"fmt"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
 )
 
@@ -17,8 +18,8 @@ type UserStore interface {
 
 // User stores user specific data
 type User struct {
-	MattermostUserID string `json:"mattermost_user_id"`
-	PublicKey        []byte `json:"public_key"`
+	MattermostUserID string           `json:"mattermost_user_id"`
+	PublicKey        crypto.PublicKey `json:"public_key"`
 }
 
 func (s *pluginStore) LoadUser(mattermostUserID string) (*User, error) {

@@ -2,6 +2,7 @@ package anonymous
 
 import (
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
@@ -12,8 +13,8 @@ type Anonymous interface {
 	PluginAPI
 	store.Store
 
-	StorePublicKey(publicKey []byte) error
-	GetPublicKey() ([]byte, error)
+	StorePublicKey(publicKey crypto.PublicKey) error
+	GetPublicKey() (crypto.PublicKey, error)
 }
 
 // Dependencies contains all API dependencies
@@ -49,7 +50,7 @@ func New(apiConfig Config, mattermostUserID string, ctx plugin.Context) Anonymou
 }
 
 //StorePublicKey store public key in plugin's KeyValue Store
-func (a *anonymous) StorePublicKey(publicKey []byte) error {
+func (a *anonymous) StorePublicKey(publicKey crypto.PublicKey) error {
 	return a.StoreUser(&store.User{
 		MattermostUserID: a.actingMattermostUserID,
 		PublicKey:        publicKey,
@@ -57,7 +58,7 @@ func (a *anonymous) StorePublicKey(publicKey []byte) error {
 }
 
 //GetPublicKey get public key from plugin's KeyValue Store
-func (a *anonymous) GetPublicKey() ([]byte, error) {
+func (a *anonymous) GetPublicKey() (crypto.PublicKey, error) {
 	user, err := a.LoadUser(a.actingMattermostUserID)
 	if err != nil {
 		return nil, err

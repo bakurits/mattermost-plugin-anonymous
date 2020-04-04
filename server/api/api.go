@@ -5,6 +5,7 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"net/http"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
@@ -60,20 +61,21 @@ func (h *handler) respondWithSuccess(w http.ResponseWriter) {
 func (h *handler) handleGetPublicKey() http.HandlerFunc {
 
 	type response struct {
-		PublicKey []byte `json:"public_key"`
+		PublicKey string `json:"public_key"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		anonymousAPI := anonymous.FromContext(r.Context())
 		pubKey, err := anonymousAPI.GetPublicKey()
-		if err != nil {
+		if err != nil || pubKey == nil {
 			h.jsonError(w, Error{
 				Message:    "public key doesn't exists",
 				StatusCode: http.StatusNoContent,
 			})
+			return
 		}
 
-		h.respondWithJSON(w, response{PublicKey: pubKey})
+		h.respondWithJSON(w, response{PublicKey: pubKey.String()})
 	}
 }
 
@@ -81,7 +83,7 @@ func (h *handler) handleGetPublicKey() http.HandlerFunc {
 func (h *handler) handleSetPublicKey() http.HandlerFunc {
 
 	type request struct {
-		PublicKey []byte `json:"public_key"`
+		PublicKey string `json:"public_key"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -91,11 +93,19 @@ func (h *handler) handleSetPublicKey() http.HandlerFunc {
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
 			h.jsonError(w, Error{Message: "Bad Request.", StatusCode: http.StatusBadRequest})
+			return
 		}
 
-		err = anonymousAPI.StorePublicKey(req.PublicKey)
+		pubKey, err := crypto.PublicKeyFromString(req.PublicKey)
+		if err != nil {
+			h.jsonError(w, Error{Message: "Bad Request.", StatusCode: http.StatusBadRequest})
+			return
+		}
+
+		err = anonymousAPI.StorePublicKey(pubKey)
 		if err != nil {
 			h.jsonError(w, Error{Message: "Not authorized.", StatusCode: http.StatusUnauthorized})
+			return
 		}
 
 		h.respondWithSuccess(w)
