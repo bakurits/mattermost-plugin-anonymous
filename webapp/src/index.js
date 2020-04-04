@@ -17,9 +17,7 @@ async function handleKeyPair(commands, args) {
         const keys = await getKeyPair();
         // eslint-disable-next-line no-case-declarations,no-console
         console.log(keys);
-        // eslint-disable-next-line no-case-declarations
-        const privateKey = keys[0];
-        return Promise.resolve({message: privateKey.toString('base64'), args});
+        return Promise.resolve({message: keys.privateKey.toString('base64'), args});
     default:
         break;
     }
@@ -30,7 +28,7 @@ function hook(message, args) {
     // eslint-disable-next-line no-console
     console.log(commands);
     if (commands[0] !== '/anonymous') {
-        return Promise.resolve({});
+        return Promise.resolve({message, args});
     }
     if (commands.length < 2) {
         return Promise.resolve({error: {message: "Command isn't specified"}});
