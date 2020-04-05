@@ -6,7 +6,7 @@ const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
 // generates ECIES private, public key pair and executes with callback
 export function generateKeyPair() {
     const privateKey = eccrypto.generatePrivate();
-    const publicKey = eccrypto.getPublic(privateKey);
+    const publicKey = getPublicKeyFromPrivateKey(privateKey);
     return {privateKey, publicKey};
 }
 
@@ -27,13 +27,29 @@ export async function storeKeyPair(privateKey, publicKey) {
     return Client.storePublicKey(publicKey);
 }
 
-// eslint-disable-next-line no-unused-vars
-export async function getKeyPair() {
-    const privateKey = localStorage.getItem(LOCAL_STORAGE_KEY);
+// get keypair
+export function getKeyPair() {
+    const pr = localStorage.getItem(LOCAL_STORAGE_KEY);
 
     //get public key from server
-    const publicKey = await Client.retrievePublicKey();
-    const pr = Buffer.from(privateKey, 'base64');
-    const pub = Buffer.from(publicKey.public_key, 'base64');
-    return {privateKey: pr, publicKey: pub};
+    const privateKey = Buffer.from(pr, 'base64');
+    const publicKey = getPublicKeyFromPrivateKey(privateKey);
+    return {privateKey, publicKey};
+}
+
+// generate public key using private key (buffer)
+export function getPublicKeyFromPrivateKey(privateKey) {
+    return eccrypto.getPublic(privateKey);
+}
+
+// only store private key (buffer)
+export function storePrivateKey(privateKey) {
+    const pr = privateKey.toString('base64');
+    localStorage.setItem(LOCAL_STORAGE_KEY, pr);
+}
+
+// get private key
+export function getPrivateKey() {
+    const privateKey = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return Buffer.from(privateKey, 'base64');
 }

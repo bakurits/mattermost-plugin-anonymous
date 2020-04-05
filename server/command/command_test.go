@@ -245,8 +245,8 @@ func Test_utils(t *testing.T) {
 
 	slash := GetSlashCommand()
 	realCommand := &model.Command{
-		Trigger:          "Anonymous",
-		DisplayName:      "Anonymous",
+		Trigger:          "anonymous",
+		DisplayName:      "anonymous",
 		Description:      "End to end message encryption",
 		AutoComplete:     true,
 		AutoCompleteDesc: "Available commands: keypair [--generate, --export, --overwrite]",

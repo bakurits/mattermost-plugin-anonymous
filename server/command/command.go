@@ -11,8 +11,8 @@ import (
 const (
 	helpTextHeader = "###### Mattermost Anonymous Plugin - Slash command Help\n"
 	helpText       = `
-* |/Anonymous help| - print this help message
-* |/Anonymous keypair [action]| - do one of the following actions regarding encryption keypair
+* |/anonymous help| - print this help message
+* |/anonymous keypair [action]| - do one of the following actions regarding encryption keypair
   * |action| is one of the following:
     * |--generate| - generates and stores new keypair for encryption
 	* |--overwrite [private key]| - you enter new 32byte private key, the plugin stores it along with the updated public key
@@ -133,8 +133,8 @@ func (c *command) responseRedirect(redirectURL string) *model.CommandResponse {
 // GetSlashCommand returns command to register
 func GetSlashCommand() *model.Command {
 	return &model.Command{
-		Trigger:          "Anonymous",
-		DisplayName:      "Anonymous",
+		Trigger:          "anonymous",
+		DisplayName:      "anonymous",
 		Description:      "End to end message encryption",
 		AutoComplete:     true,
 		AutoCompleteDesc: "Available commands: keypair [--generate, --export, --overwrite]",

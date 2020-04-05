@@ -1,4 +1,9 @@
-import {generateAndStoreKeyPair, getKeyPair} from '../encrypt/key_manager';
+import {
+    generateAndStoreKeyPair,
+    getPrivateKey,
+    getPublicKeyFromPrivateKey,
+    storePrivateKey,
+} from '../encrypt/key_manager';
 import {sendEphemeralPost} from '../actions/actions';
 
 export default class Hooks {
@@ -7,21 +12,31 @@ export default class Hooks {
         this.settings = settings;
     }
 
-    // eslint-disable-next-line consistent-return
     handleKeyPair = async (commands, args) => {
+        let privateKey;
         switch (commands[0]) {
         case '--generate':
             // eslint-disable-next-line no-case-declarations
             await generateAndStoreKeyPair();
             this.store.dispatch(sendEphemeralPost('keys generated', args.channel_id));
             return Promise.resolve({});
+
         case '--overwrite':
-            return Promise.resolve({});
-        case '--export':
+            if (commands.length < 2) {
+                return Promise.resolve({error: {message: "Private key isn't specified"}});
+            }
+            // eslint-disable-next-line no-magic-numbers
+            if (commands.length > 3) {
+                return Promise.resolve({error: {message: 'Too many arguments'}});
+            }
+            privateKey = Buffer.from(commands[1], 'base64');
+            storePrivateKey(privateKey);
             // eslint-disable-next-line no-case-declarations
-            const keys = await getKeyPair();
-            // eslint-disable-next-line no-case-declarations,no-console
-            const privateKey = keys.privateKey;
+            const publicKey = getPublicKeyFromPrivateKey(privateKey).toString('base64');
+            return Promise.resolve({message: '/anonymous keypair --overwrite ' + publicKey, args});
+
+        case '--export':
+            privateKey = getPrivateKey();
             this.store.dispatch(sendEphemeralPost('your private key is :    ' + privateKey.toString('base64'), args.channel_id));
             return Promise.resolve({});
         default:
