@@ -51,9 +51,7 @@ func newCommand(args *model.CommandArgs, a anonymous.Anonymous) *command {
 	c.handler = HandlerMap{
 		handlers: map[string]HandlerFunc{
 			"help":                c.Help,
-			"keypair/--generate":  c.executeKeyPairGenerate,
 			"keypair/--overwrite": c.executeKeyOverwrite,
-			"keypair/--export":    c.executeKeyExport,
 		},
 		defaultHandler: c.Help,
 	}
@@ -76,10 +74,6 @@ func (c *command) Handle(args ...string) (*model.CommandResponse, error) {
 	return ch.defaultHandler(args...)
 }
 
-func (c *command) executeKeyPairGenerate(args ...string) (*model.CommandResponse, error) {
-	return &model.CommandResponse{}, nil
-}
-
 func (c *command) executeKeyOverwrite(args ...string) (*model.CommandResponse, error) {
 	if len(args) > 1 {
 		return &model.CommandResponse{}, &model.AppError{
@@ -98,10 +92,8 @@ func (c *command) executeKeyOverwrite(args ...string) (*model.CommandResponse, e
 			Message: err.Error(),
 		}
 	}
-	return &model.CommandResponse{}, nil
-}
 
-func (c *command) executeKeyExport(args ...string) (*model.CommandResponse, error) {
+	c.postCommandResponse("Keys were successfully overwritten")
 	return &model.CommandResponse{}, nil
 }
 
