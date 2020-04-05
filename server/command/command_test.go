@@ -66,10 +66,22 @@ func Test_command_overwrite(t *testing.T) {
 			},
 			args: args{
 				commandArgs: &model.CommandArgs{
-					Command: "keypair --overwrite 123456789123456789123456789",
+					Command: "keypair --overwrite 2JUMmg86ptVNYZT1scuLUIFegDr513LHA6aqsJCLaZo=",
 				},
 			},
 			wantErr: false,
+		},
+		{
+			name: "overwrite with invalid key",
+			fields: fields{
+				anonymous: a,
+			},
+			args: args{
+				commandArgs: &model.CommandArgs{
+					Command: "keypair --overwrite 1234567891235412415251",
+				},
+			},
+			wantErr: true,
 		},
 		{
 			name: "overwrite error test",
@@ -78,7 +90,7 @@ func Test_command_overwrite(t *testing.T) {
 			},
 			args: args{
 				commandArgs: &model.CommandArgs{
-					Command: "keypair --overwrite 123456789123456789123456789",
+					Command: "keypair --overwrite 2JUMmg86ptVNYZT1scuLUIFegDr513LHA6aqsJCLaZo=",
 				},
 			},
 			wantErr: true,
