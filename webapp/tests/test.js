@@ -4,8 +4,8 @@ import {generateKeyPair} from '../src/encrypt/key_manager';
 
 test('should be decrypted same', () => {
     const keys = generateKeyPair();
-    const pr = keys[0];
-    const pb = keys[1];
+    const pr = keys.privateKey;
+    const pb = keys.publicKey;
 
     // eslint-disable-next-line no-magic-numbers
     const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
