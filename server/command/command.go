@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"strings"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
@@ -85,8 +86,14 @@ func (c *command) executeKeyOverwrite(args ...string) (*model.CommandResponse, e
 			Message: "public key not passed to function",
 		}
 	}
-	pub := args[0]
-	err := c.anonymous.StorePublicKey([]byte(pub))
+	pub, err := crypto.PublicKeyFromString(args[0])
+	if err != nil {
+		return &model.CommandResponse{}, &model.AppError{
+			Message: err.Error(),
+		}
+	}
+
+	err = c.anonymous.StorePublicKey(pub)
 	if err != nil {
 		return &model.CommandResponse{}, &model.AppError{
 			Message: err.Error(),

@@ -72,7 +72,7 @@ func (p *plugin) ExecuteCommand(c *mattermostPlugin.Context, commandArgs *model.
 	args := strings.Fields(commandArgs.Command)
 	var commandResponse *model.CommandResponse
 	var err error
-	if len(args) == 0 || args[0] != "/Anonymous" {
+	if len(args) == 0 || args[0] != "/anonymous" {
 		commandResponse, err = comm.Help()
 	} else {
 		commandResponse, err = comm.Handle(args[1:]...)
