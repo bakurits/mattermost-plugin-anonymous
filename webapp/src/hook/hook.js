@@ -21,7 +21,7 @@ export default class Hooks {
             // eslint-disable-next-line no-case-declarations
             const keys = await getKeyPair();
             // eslint-disable-next-line no-case-declarations,no-console
-            const privateKey = keys[0];
+            const privateKey = keys.privateKey;
             this.store.dispatch(sendEphemeralPost('your private key is :    ' + privateKey.toString('base64'), args.channel_id));
             return Promise.resolve({});
         default:
