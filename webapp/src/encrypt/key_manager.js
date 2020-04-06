@@ -7,12 +7,19 @@ const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
 export function generateKeyPair() {
     const privateKey = eccrypto.generatePrivate();
     const publicKey = getPublicKeyFromPrivateKey(privateKey);
+    if (publicKey === null) {
+        return null;
+    }
     return {privateKey, publicKey};
 }
 
 // generates and stores private and public keys
 export async function generateAndStoreKeyPair() {
     const keys = generateKeyPair();
+
+    if (keys === null) {
+        return null;
+    }
     return storeKeyPair(keys.privateKey, keys.privateKey);
 }
 
@@ -23,17 +30,26 @@ export async function storeKeyPair(privateKey, publicKey) {
     return Client.storePublicKey(publicKey);
 }
 
-// get keypair
+// get getKeyPair returns key pair
 export function getKeyPair() {
     const pr = localStorage.getItem(LOCAL_STORAGE_KEY);
     const privateKey = Buffer.from(pr, 'base64');
     const publicKey = getPublicKeyFromPrivateKey(privateKey);
+
+    if (privateKey === null) {
+        return null;
+    }
+
     return {privateKey, publicKey};
 }
 
 // generate public key using private key (buffer)
 export function getPublicKeyFromPrivateKey(privateKey) {
-    return eccrypto.getPublic(privateKey);
+    try {
+        return eccrypto.getPublic(privateKey);
+    } catch (e) {
+        return null;
+    }
 }
 
 // only store private key (buffer)
