@@ -19,10 +19,6 @@ export async function generateAndStoreKeyPair() {
 //store private key in a local storage
 export async function storeKeyPair(privateKey, publicKey) {
     const pr = privateKey.toString('base64');
-    // eslint-disable-next-line no-console
-    console.log('stored in localstorage');
-    // eslint-disable-next-line no-console
-    console.log(pr);
     localStorage.setItem(LOCAL_STORAGE_KEY, pr);
     return Client.storePublicKey(publicKey);
 }
@@ -30,8 +26,6 @@ export async function storeKeyPair(privateKey, publicKey) {
 // get keypair
 export function getKeyPair() {
     const pr = localStorage.getItem(LOCAL_STORAGE_KEY);
-
-    //get public key from server
     const privateKey = Buffer.from(pr, 'base64');
     const publicKey = getPublicKeyFromPrivateKey(privateKey);
     return {privateKey, publicKey};

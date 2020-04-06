@@ -20,16 +20,12 @@ export default class Client {
     };
 
     doGet = async (url, headers = {}) => {
-        // eslint-disable-next-line no-console
-        console.log('doget!!!  ');
         const opts = Client4.getOptions(headers);
         const options = {
             headers: opts.headers,
             withCredentials: opts.credentials === 'include',
         };
         const response = await Axios.get(url, options);
-        // eslint-disable-next-line no-console
-        console.log(response);
         if (response.status === STATUS_OK) {
             return response.data;
         }
@@ -42,8 +38,6 @@ export default class Client {
     };
 
     doPost = async (url, body, headers = {}) => {
-        // eslint-disable-next-line no-console
-        console.log('dopost!!!  ');
         const opts = Client4.getOptions(headers);
         const options = {
             headers: opts.headers,

@@ -1,20 +1,16 @@
+/* eslint-disable no-magic-numbers,max-nested-callbacks */
 import 'mattermost-webapp/tests/setup';
 import {decrypt, encrypt} from '../src/encrypt/encrypt';
-import {generateKeyPair} from '../src/encrypt/key_manager';
+import {generateKeyPair, getKeyPair, storePrivateKey} from '../src/encrypt/key_manager';
 
 test('should be decrypted same', () => {
     const keys = generateKeyPair();
     const pr = keys.privateKey;
     const pb = keys.publicKey;
 
-    // eslint-disable-next-line no-magic-numbers
     const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
-
-    // eslint-disable-next-line max-nested-callbacks
     testsInput.forEach((test) => {
-        // eslint-disable-next-line max-nested-callbacks
         encrypt(pb, test, (encrypted) => {
-            // eslint-disable-next-line max-nested-callbacks
             decrypt(pr, encrypted, (decrypted) => {
                 expect(decrypted).toStrictEqual(test);
             });
@@ -22,17 +18,10 @@ test('should be decrypted same', () => {
     });
 });
 
-//
-// test('storing key in local storage', async () => {
-//     const generateReturn = await generateKeyPair();
-//     const response = generateReturn[0];
-//     const pr = generateReturn[0];
-//     const pb = generateReturn[0];
-//     expect(response.status).toEqual(STATUS_OK);
-//
-//     const keys = await getKeyPair();
-//     const priv = keys[0];
-//     const pub = keys[1];
-//     expect(priv).toStrictEqual(pr);
-//     expect(pub).toStrictEqual(pb);
-// });
+test('storing key in local storage', () => {
+    const keys1 = generateKeyPair();
+    storePrivateKey(keys1.privateKey);
+    const keys2 = getKeyPair();
+    expect(keys1.publicKey).toStrictEqual(keys2.publicKey);
+    expect(keys1.privateKey).toStrictEqual(keys2.privateKey);
+});
