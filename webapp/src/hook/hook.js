@@ -5,7 +5,6 @@ import {
     storePrivateKey,
 } from '../encrypt/key_manager';
 import {sendEphemeralPost} from '../actions/actions';
-import {validBase64} from '../encrypt/utils';
 
 export default class Hooks {
     constructor(store, settings) {
@@ -17,6 +16,7 @@ export default class Hooks {
         let privateKey;
         let publicKey;
         let response;
+        let pubKeyString;
         switch (commands[0]) {
         case '--generate':
             response = await generateAndStoreKeyPair();
@@ -33,15 +33,14 @@ export default class Hooks {
             if (commands.length > 2) {
                 return Promise.resolve({error: {message: 'Too many arguments'}});
             }
-            if (!validBase64(commands[1])) {
-                return Promise.resolve({error: {message: 'Invalid private key'}});
-            }
             privateKey = Buffer.from(commands[1], 'base64');
-            storePrivateKey(privateKey);
-            publicKey = getPublicKeyFromPrivateKey(privateKey).toString('base64');
-            if (!publicKey) {
+            pubKeyString = getPublicKeyFromPrivateKey(privateKey);
+            if (!pubKeyString) {
                 return Promise.resolve({error: {message: 'Invalid private key'}});
             }
+
+            publicKey = pubKeyString.toString('base64');
+            storePrivateKey(privateKey);
             return Promise.resolve({message: '/anonymous keypair --overwrite ' + publicKey, args});
 
         case '--export':

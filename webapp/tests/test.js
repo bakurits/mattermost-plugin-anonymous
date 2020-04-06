@@ -35,4 +35,7 @@ test('test get public key from private', () => {
 
     const c = getPublicKeyFromPrivateKey(Buffer.from('74PCP0wLKoBApiR1iOBiNGAE+WUScXr40bjWfUHtB8Y=', 'base64'));
     expect(c).toStrictEqual(Buffer.from([4, 230, 209, 139, 9, 141, 217, 63, 192, 48, 95, 207, 193, 98, 113, 155, 196, 143, 20, 107, 69, 250, 237, 169, 144, 53, 122, 84, 76, 170, 18, 34, 43, 80, 124, 44, 75, 96, 95, 230, 43, 144, 157, 119, 90, 188, 98, 27, 60, 170, 99, 52, 162, 246, 100, 223, 160, 93, 58, 148, 40, 126, 65, 139, 120]));
+
+    const d = getPublicKeyFromPrivateKey();
+    expect(d).toBeNull();
 });
