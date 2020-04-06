@@ -35,11 +35,9 @@ export function getKeyPair() {
     const pr = localStorage.getItem(LOCAL_STORAGE_KEY);
     const privateKey = Buffer.from(pr, 'base64');
     const publicKey = getPublicKeyFromPrivateKey(privateKey);
-
     if (privateKey === null) {
         return null;
     }
-
     return {privateKey, publicKey};
 }
 

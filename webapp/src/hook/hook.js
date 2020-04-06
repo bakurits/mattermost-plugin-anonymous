@@ -34,14 +34,14 @@ export default class Hooks {
                 return Promise.resolve({error: {message: 'Too many arguments'}});
             }
             privateKey = Buffer.from(commands[1], 'base64');
-            pubKeyString = getPublicKeyFromPrivateKey(privateKey);
-            if (!pubKeyString) {
+            publicKey = getPublicKeyFromPrivateKey(privateKey);
+            if (!publicKey) {
                 return Promise.resolve({error: {message: 'Invalid private key'}});
             }
 
-            publicKey = pubKeyString.toString('base64');
+            pubKeyString = publicKey.toString('base64');
             storePrivateKey(privateKey);
-            return Promise.resolve({message: '/anonymous keypair --overwrite ' + publicKey, args});
+            return Promise.resolve({message: '/anonymous keypair --overwrite ' + pubKeyString, args});
 
         case '--export':
             privateKey = getPrivateKey();
