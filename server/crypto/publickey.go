@@ -13,7 +13,7 @@ type PublicKey []byte
 func PublicKeyFromString(key string) (PublicKey, error) {
 	data, err := base64.StdEncoding.DecodeString(key)
 	if err != nil {
-		return PublicKey{}, errors.Wrap(err, "can't decode public key from data")
+		return PublicKey{}, errors.Wrap(err, "Error while decoding public key from data")
 	}
 	return data, nil
 }

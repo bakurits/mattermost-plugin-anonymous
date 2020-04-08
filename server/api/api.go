@@ -5,8 +5,9 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"net/http"
+
+	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"

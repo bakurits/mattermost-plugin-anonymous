@@ -31,7 +31,7 @@ func (s *pluginStore) Load(key string) ([]byte, error) {
 		return nil, errors.WithMessage(appErr, "failed plugin KVGet")
 	}
 	if data == nil {
-		return nil, errors.New("no data")
+		return nil, errors.New("Error while loading data from KVStore")
 	}
 	return data, nil
 }
@@ -39,7 +39,7 @@ func (s *pluginStore) Load(key string) ([]byte, error) {
 func (s *pluginStore) Store(key string, data []byte) error {
 	appErr := s.api.KVSet(key, data)
 	if appErr != nil {
-		return errors.WithMessagef(appErr, "failed plugin KVSet %q", key)
+		return errors.Wrapf(appErr, "Error while storing data with KVStore with key : %q", key)
 	}
 	return nil
 }
@@ -47,7 +47,7 @@ func (s *pluginStore) Store(key string, data []byte) error {
 func (s *pluginStore) Delete(key string) error {
 	appErr := s.api.KVDelete(key)
 	if appErr != nil {
-		return errors.WithMessagef(appErr, "failed plugin KVDelete %q", key)
+		return errors.Wrapf(appErr, "Error while deleting data from KVStore with key : %q", key)
 	}
 	return nil
 }
@@ -56,7 +56,7 @@ func (s *pluginStore) Delete(key string) error {
 func LoadJSON(s KVStore, key string, v interface{}) (returnErr error) {
 	data, err := s.Load(key)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Error while loading json")
 	}
 	return json.Unmarshal(data, v)
 }
@@ -65,7 +65,7 @@ func LoadJSON(s KVStore, key string, v interface{}) (returnErr error) {
 func SetJSON(s KVStore, key string, v interface{}) (returnErr error) {
 	data, err := json.Marshal(v)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Error while storing json")
 	}
 	return s.Store(key, data)
 }

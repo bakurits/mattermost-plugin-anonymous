@@ -56,7 +56,7 @@ func (p *plugin) OnActivate() error {
 	rand.Seed(time.Now().UnixNano())
 	err := p.API.RegisterCommand(command.GetSlashCommand())
 	if err != nil {
-		return errors.WithMessage(err, "OnActivate: failed to register command")
+		return errors.Wrap(err, "OnActivate: failed to register command")
 	}
 	return nil
 }
@@ -144,7 +144,7 @@ func (p *plugin) OnConfigurationChange() error {
 
 func (p *plugin) ServeHTTP(pc *mattermostPlugin.Context, w http.ResponseWriter, req *http.Request) {
 	mattermostUserID := req.Header.Get("Mattermost-User-ID")
-	if len(mattermostUserID) == 0 {
+	if mattermostUserID == "" {
 		http.Error(w, "Not Authorized", http.StatusUnauthorized)
 	}
 

@@ -1,10 +1,10 @@
 package store
 
 import (
-	"errors"
 	"fmt"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
+	"github.com/pkg/errors"
 )
 
 const userStoreKeyPrefix = "user_"
@@ -26,7 +26,7 @@ func (s *pluginStore) LoadUser(mattermostUserID string) (*User, error) {
 	user := &User{}
 	err := store.LoadJSON(s.userStore, fmt.Sprintf("%s%s", userStoreKeyPrefix, mattermostUserID), user)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "Error while loading a user with id : %s", mattermostUserID)
 	}
 	return user, nil
 }
@@ -37,7 +37,7 @@ func (s *pluginStore) StoreUser(user *User) error {
 	}
 	err := store.SetJSON(s.userStore, fmt.Sprintf("%s%s", userStoreKeyPrefix, user.MattermostUserID), user)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "Error while storing user")
 	}
 	return nil
 }
@@ -45,7 +45,7 @@ func (s *pluginStore) StoreUser(user *User) error {
 func (s *pluginStore) DeleteUser(mattermostUserID string) error {
 	err := s.userStore.Delete(fmt.Sprintf("%s%s", userStoreKeyPrefix, mattermostUserID))
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Error while deleting a user with id : %s", mattermostUserID)
 	}
 	return nil
 }
