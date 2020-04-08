@@ -20,6 +20,10 @@ const (
 	* |--overwrite [private key]| - you enter new 32byte private key, the plugin stores it along with the updated public key
     * |--export| - exports your existing keypair
 `
+	autoCompleteDescription = "Available commands: keypair [--generate, --export, --overwrite]"
+	autoCompleteHint        = "[command][subcommands]"
+	pluginDescription       = "End to end message encryption"
+	slashCommandName        = "anonymous"
 )
 
 // Handler returns API for interacting with plugin commands
@@ -66,7 +70,7 @@ func NewHandler(args *model.CommandArgs, a anonymous.Anonymous) Handler {
 
 func (c *command) Handle(args ...string) (*model.CommandResponse, error) {
 	ch := c.handler
-	if len(args) == 0 || args[0] != "/anonymous" {
+	if len(args) == 0 || args[0] != "/"+slashCommandName {
 		return ch.defaultHandler(args...)
 	}
 	args = args[1:]
@@ -137,11 +141,11 @@ func (c *command) responseRedirect(redirectURL string) *model.CommandResponse {
 // GetSlashCommand returns command to register
 func GetSlashCommand() *model.Command {
 	return &model.Command{
-		Trigger:          "anonymous",
-		DisplayName:      "anonymous",
-		Description:      "End to end message encryption",
+		Trigger:          slashCommandName,
+		DisplayName:      slashCommandName,
+		Description:      pluginDescription,
 		AutoComplete:     true,
-		AutoCompleteDesc: "Available commands: keypair [--generate, --export, --overwrite]",
-		AutoCompleteHint: "[command][subcommands]",
+		AutoCompleteDesc: autoCompleteDescription,
+		AutoCompleteHint: autoCompleteHint,
 	}
 }

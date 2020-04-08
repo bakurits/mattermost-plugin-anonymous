@@ -6,6 +6,7 @@ import (
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
+	"github.com/pkg/errors"
 )
 
 // Anonymous API for business logic
@@ -61,7 +62,7 @@ func (a *anonymous) StorePublicKey(publicKey crypto.PublicKey) error {
 func (a *anonymous) GetPublicKey() (crypto.PublicKey, error) {
 	user, err := a.LoadUser(a.actingMattermostUserID)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "Error while loading a user %s", a.actingMattermostUserID)
 	}
 	return user.PublicKey, nil
 }
