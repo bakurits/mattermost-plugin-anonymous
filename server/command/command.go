@@ -2,8 +2,9 @@ package command
 
 import (
 	"fmt"
-	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"strings"
+
+	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 	"github.com/mattermost/mattermost-server/v5/model"
@@ -21,10 +22,9 @@ const (
 `
 )
 
-// Command returns API for interacting with plugin commands
-type Command interface {
+// Handler returns API for interacting with plugin commands
+type Handler interface {
 	Handle(args ...string) (*model.CommandResponse, error)
-	Help(args ...string) (*model.CommandResponse, error)
 }
 
 // command stores command specific information
@@ -59,13 +59,18 @@ func newCommand(args *model.CommandArgs, a anonymous.Anonymous) *command {
 	return c
 }
 
-// New returns new Command with given dependencies
-func New(args *model.CommandArgs, a anonymous.Anonymous) Command {
+// NewHandler returns new Handler with given dependencies
+func NewHandler(args *model.CommandArgs, a anonymous.Anonymous) Handler {
 	return newCommand(args, a)
 }
 
 func (c *command) Handle(args ...string) (*model.CommandResponse, error) {
 	ch := c.handler
+	if len(args) == 0 || args[0] != "/anonymous" {
+		return ch.defaultHandler(args...)
+	}
+	args = args[1:]
+
 	for n := len(args); n > 0; n-- {
 		h := ch.handlers[strings.Join(args[:n], "/")]
 		if h != nil {
@@ -104,7 +109,7 @@ func (c *command) executeKeyOverwrite(args ...string) (*model.CommandResponse, e
 	return &model.CommandResponse{}, nil
 }
 
-func (c *command) Help(args ...string) (*model.CommandResponse, error) {
+func (c *command) Help(_ ...string) (*model.CommandResponse, error) {
 	helpText := helpTextHeader + helpText
 	c.postCommandResponse(helpText)
 	return &model.CommandResponse{}, nil

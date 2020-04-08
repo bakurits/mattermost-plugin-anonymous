@@ -1,9 +1,10 @@
 package command
 
 import (
-	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/test"
 	"strings"
 	"testing"
+
+	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/test"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 	mockAnonymous "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous/mock"
@@ -42,7 +43,7 @@ func Test_command_overwrite(t *testing.T) {
 			},
 			args: args{
 				commandArgs: &model.CommandArgs{
-					Command: "keypair --overwrite",
+					Command: "/anonymous keypair --overwrite",
 				},
 			},
 			wantErr: true,
@@ -54,7 +55,7 @@ func Test_command_overwrite(t *testing.T) {
 			},
 			args: args{
 				commandArgs: &model.CommandArgs{
-					Command: "keypair --overwrite 1 2 3 4 5",
+					Command: "/anonymous keypair --overwrite 1 2 3 4 5",
 				},
 			},
 			wantErr: true,
@@ -66,7 +67,7 @@ func Test_command_overwrite(t *testing.T) {
 			},
 			args: args{
 				commandArgs: &model.CommandArgs{
-					Command: "keypair --overwrite 2JUMmg86ptVNYZT1scuLUIFegDr513LHA6aqsJCLaZo=",
+					Command: "/anonymous keypair --overwrite 2JUMmg86ptVNYZT1scuLUIFegDr513LHA6aqsJCLaZo=",
 				},
 			},
 			wantErr: false,
@@ -78,7 +79,7 @@ func Test_command_overwrite(t *testing.T) {
 			},
 			args: args{
 				commandArgs: &model.CommandArgs{
-					Command: "keypair --overwrite 1234567891235412415251",
+					Command: "/anonymous keypair --overwrite 1234567891235412415251",
 				},
 			},
 			wantErr: true,
@@ -90,7 +91,7 @@ func Test_command_overwrite(t *testing.T) {
 			},
 			args: args{
 				commandArgs: &model.CommandArgs{
-					Command: "keypair --overwrite 2JUMmg86ptVNYZT1scuLUIFegDr513LHA6aqsJCLaZo=",
+					Command: "/anonymous keypair --overwrite 2JUMmg86ptVNYZT1scuLUIFegDr513LHA6aqsJCLaZo=",
 				},
 			},
 			wantErr: true,
@@ -98,7 +99,7 @@ func Test_command_overwrite(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			comm := New(tt.args.commandArgs, tt.fields.anonymous)
+			comm := NewHandler(tt.args.commandArgs, tt.fields.anonymous)
 			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
 			test.CheckErr(tassert, tt.wantErr, err)
 		})
@@ -155,7 +156,7 @@ func Test_command_other(t *testing.T) {
 			},
 			args: args{
 				commandArgs: &model.CommandArgs{
-					Command: "keypair --wrongAction",
+					Command: "/anonymous keypair --wrongAction",
 				},
 			},
 			wantErr: false,
@@ -163,7 +164,7 @@ func Test_command_other(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			comm := New(tt.args.commandArgs, tt.fields.anonymous)
+			comm := NewHandler(tt.args.commandArgs, tt.fields.anonymous)
 			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
 			test.CheckErr(tassert, tt.wantErr, err)
 		})

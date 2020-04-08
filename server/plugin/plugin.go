@@ -1,13 +1,14 @@
 package plugin
 
 import (
-	mattermostPlugin "github.com/mattermost/mattermost-server/v5/plugin"
 	"math/rand"
 	"net/http"
 	"reflect"
 	"strings"
 	"sync"
 	"time"
+
+	mattermostPlugin "github.com/mattermost/mattermost-server/v5/plugin"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 
@@ -68,16 +69,10 @@ func (p *plugin) ExecuteCommand(c *mattermostPlugin.Context, commandArgs *model.
 	}
 
 	an := anonymous.New(p.newAnonymousConfig(), mattermostUserID, *c)
-	comm := command.New(commandArgs, an)
+	commandHandler := command.NewHandler(commandArgs, an)
 	args := strings.Fields(commandArgs.Command)
-	var commandResponse *model.CommandResponse
-	var err error
-	if len(args) == 0 || args[0] != "/anonymous" {
-		commandResponse, err = comm.Help()
-	} else {
-		commandResponse, err = comm.Handle(args[1:]...)
-	}
 
+	commandResponse, err := commandHandler.Handle(args...)
 	if err == nil {
 		return commandResponse, nil
 	}
