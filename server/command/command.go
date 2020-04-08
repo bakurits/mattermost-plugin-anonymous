@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	helpTextHeader = "###### Mattermost Anonymous Plugin - Slash command Help\n"
+	helpTextHeader = "###### Mattermost Anonymous Plugin - Slash command help\n"
 	helpText       = `
 * |/anonymous help| - print this help message
 * |/anonymous keypair [action]| - do one of the following actions regarding encryption keypair
@@ -51,10 +51,10 @@ func newCommand(args *model.CommandArgs, a anonymous.Anonymous) *command {
 
 	c.handler = HandlerMap{
 		handlers: map[string]HandlerFunc{
-			"help":                c.Help,
+			"help":                c.help,
 			"keypair/--overwrite": c.executeKeyOverwrite,
 		},
-		defaultHandler: c.Help,
+		defaultHandler: c.help,
 	}
 	return c
 }
@@ -109,7 +109,7 @@ func (c *command) executeKeyOverwrite(args ...string) (*model.CommandResponse, e
 	return &model.CommandResponse{}, nil
 }
 
-func (c *command) Help(_ ...string) (*model.CommandResponse, error) {
+func (c *command) help(_ ...string) (*model.CommandResponse, error) {
 	helpText := helpTextHeader + helpText
 	c.postCommandResponse(helpText)
 	return &model.CommandResponse{}, nil
