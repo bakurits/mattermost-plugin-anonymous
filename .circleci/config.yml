@@ -1,4 +1,8 @@
 version: 2.1
+
+orbs:
+  codecov: codecov/codecov@volatile
+
 executors:
   default:
     docker:
@@ -10,18 +14,41 @@ jobs:
       name: default
     steps:
       - checkout
+
       - run: make check-style
 
-  test:
+  test_backend:
     executor:
       name: default
     steps:
+
       - checkout
-      - run: make test
+
+      - run: go get -v -t -d ./...
+      - run: go test -coverprofile=coverage.txt -covermode=atomic -v ./...
+
+      - codecov/upload:
+          file: "coverage.txt"
+          flags: "backend"
+        
+  test_frontend:
+    executor:
+      name: default
+    steps:
+
+      - checkout
+
+      - run: cd webapp && npm install
+      - run: cd webapp && npm run test
+
+      - codecov/upload:
+          file: "webapp/coverage/lcov.info"
+          flags: "frontend"
 
 workflows:
   version: 2
   untagged-build:
     jobs:
       - lint
-      - test
+      - test_backend
+      - test_frontend
