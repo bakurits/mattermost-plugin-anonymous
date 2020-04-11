@@ -15,7 +15,7 @@ type Anonymous interface {
 	store.Store
 
 	StorePublicKey(publicKey crypto.PublicKey) error
-	GetPublicKey() (crypto.PublicKey, error)
+	GetPublicKey(userID string) (crypto.PublicKey, error)
 }
 
 // Dependencies contains all API dependencies
@@ -59,8 +59,8 @@ func (a *anonymous) StorePublicKey(publicKey crypto.PublicKey) error {
 }
 
 //GetPublicKey get public key from plugin's KeyValue Store
-func (a *anonymous) GetPublicKey() (crypto.PublicKey, error) {
-	user, err := a.LoadUser(a.actingMattermostUserID)
+func (a *anonymous) GetPublicKey(userID string) (crypto.PublicKey, error) {
+	user, err := a.LoadUser(userID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error while loading a user %s", a.actingMattermostUserID)
 	}

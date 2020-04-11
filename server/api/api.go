@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gorilla/schema"
+
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
@@ -29,6 +31,10 @@ type handler struct {
 
 // NewHTTPHandler initializes the router.
 func NewHTTPHandler() http.Handler {
+	return newHandler()
+}
+
+func newHandler() *handler {
 	h := &handler{
 		Router: mux.NewRouter(),
 	}
@@ -52,22 +58,34 @@ func (h *handler) respondWithJSON(w http.ResponseWriter, data interface{}) {
 }
 
 func (h *handler) respondWithSuccess(w http.ResponseWriter) {
-	_, err := w.Write([]byte("{\"status\": \"OK\"}"))
-	if err != nil {
-		mlog.Error(err.Error())
-	}
+	h.respondWithJSON(w, struct {
+		Status string `json:"status"`
+	}{Status: "OK"})
 }
 
 // handleGetPublicKey handle get public key request
 func (h *handler) handleGetPublicKey() http.HandlerFunc {
 
+	type request struct {
+		UserID string `schema:"user_id"`
+	}
 	type response struct {
 		PublicKey string `json:"public_key"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		var req request
+		err := schema.NewDecoder().Decode(&req, r.URL.Query())
+		if err != nil || req.UserID == "" {
+			h.jsonError(w, Error{
+				Message:    "Bad Request",
+				StatusCode: http.StatusBadRequest,
+			})
+			return
+		}
+
 		anonymousAPI := anonymous.FromContext(r.Context())
-		pubKey, err := anonymousAPI.GetPublicKey()
+		pubKey, err := anonymousAPI.GetPublicKey(req.UserID)
 		if err != nil || pubKey == nil {
 			h.jsonError(w, Error{
 				Message:    "public key doesn't exists",
@@ -93,19 +111,19 @@ func (h *handler) handleSetPublicKey() http.HandlerFunc {
 		var req request
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			h.jsonError(w, Error{Message: "Bad Request.", StatusCode: http.StatusBadRequest})
+			h.jsonError(w, Error{Message: "Bad Request", StatusCode: http.StatusBadRequest})
 			return
 		}
 
 		pubKey, err := crypto.PublicKeyFromString(req.PublicKey)
 		if err != nil {
-			h.jsonError(w, Error{Message: "Bad Request.", StatusCode: http.StatusBadRequest})
+			h.jsonError(w, Error{Message: "Public key format is incorrect", StatusCode: http.StatusBadRequest})
 			return
 		}
 
 		err = anonymousAPI.StorePublicKey(pubKey)
 		if err != nil {
-			h.jsonError(w, Error{Message: "Not authorized.", StatusCode: http.StatusUnauthorized})
+			h.jsonError(w, Error{Message: "Not Authorized", StatusCode: http.StatusUnauthorized})
 			return
 		}
 
