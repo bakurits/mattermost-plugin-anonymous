@@ -15,8 +15,8 @@ export default class Client {
         return this.doPost(`${this.url}/pub_key`, {public_key: publicKey.toString('base64')});
     };
 
-    retrievePublicKey = async () => {
-        return this.doGet(`${this.url}/pub_key`);
+    retrievePublicKey = async (userID) => {
+        return this.doGet(`${this.url}/pub_key?user_id=${userID}`);
     };
 
     doGet = async (url, headers = {}) => {
