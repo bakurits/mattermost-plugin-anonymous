@@ -33,21 +33,31 @@ type Config struct {
 // PluginAPI API form mattermost plugin
 type PluginAPI interface {
 	SendEphemeralPost(userID string, post *model.Post) *model.Post
+	GetActivePlugins() ([]PluginIdentifier, error)
 }
 
 type anonymous struct {
 	Config
 	actingMattermostUserID string
 	PluginContext          plugin.Context
+	VerifiedPlugins        map[PluginIdentifier]bool
 }
 
 // New returns new Anonymous API object
 func New(apiConfig Config, mattermostUserID string, ctx plugin.Context) Anonymous {
-	return &anonymous{
+	return newAnonymous(apiConfig, mattermostUserID, ctx)
+}
+
+func newAnonymous(apiConfig Config, mattermostUserID string, ctx plugin.Context) *anonymous {
+	a := &anonymous{
 		Config:                 apiConfig,
 		actingMattermostUserID: mattermostUserID,
 		PluginContext:          ctx,
 	}
+
+	a.initializeValidatedPackages()
+
+	return a
 }
 
 //StorePublicKey store public key in plugin's KeyValue Store
