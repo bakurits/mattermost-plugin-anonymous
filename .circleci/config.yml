@@ -30,6 +30,18 @@ jobs:
       - codecov/upload:
           file: "coverage.txt"
           flags: "backend"
+
+  deploy:
+    executor:
+      name: default
+    steps:
+
+      - checkout
+
+      - run: export MM_SERVICESETTINGS_SITEURL=http://134.122.71.100:8065
+      - run: export MM_ADMIN_USERNAME=gtsut16@freeuni.edu.ge
+      - run: export MM_ADMIN_PASSWORD=buJg#4V1g*
+      - run: make deploy
         
   test_frontend:
     executor:
@@ -47,8 +59,9 @@ jobs:
 
 workflows:
   version: 2
-  untagged-build:
+  build-deploy:
     jobs:
       - lint
       - test_backend
       - test_frontend
+      - deploy
