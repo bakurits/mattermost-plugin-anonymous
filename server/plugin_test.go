@@ -23,5 +23,5 @@ func TestServeHTTP(t *testing.T) {
 	tassert.Nil(err)
 	bodyString := string(bodyBytes)
 
-	tassert.Equal("Hello, world!", bodyString)
+	tassert.Equal("Hello, world", bodyString)
 }

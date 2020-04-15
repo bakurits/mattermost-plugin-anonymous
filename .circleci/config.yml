@@ -64,4 +64,7 @@ workflows:
       - lint
       - test_backend
       - test_frontend
-      - deploy
+      - deploy:
+          requires:
+            - test_frontend
+            - test_backend
