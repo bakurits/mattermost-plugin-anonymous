@@ -1,4 +1,4 @@
-# Plugin Starter Template [![CircleCI branch](https://img.shields.io/circleci/project/github/mattermost/mattermost-plugin-starter-template/master.svg)](https://circleci.com/gh/mattermost/mattermost-plugin-starter-template)
+# Anonymous Plugin [![CircleCI branch](https://img.shields.io/circleci/project/github/bakurits/mattermost-plugin-anonymous/key-pair-generation.svg)](https://circleci.com/gh/bakurits/mattermost-plugin-anonymous) [![codecov](https://codecov.io/gh/bakurits/mattermost-plugin-anonymous/branch/key-pair-generation/graph/badge.svg)](https://codecov.io/gh/bakurits/mattermost-plugin-anonymous)
 
 This plugin serves as a starting point for writing a Mattermost plugin. Feel free to base your own plugin off this repository.
 
