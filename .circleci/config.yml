@@ -34,13 +34,13 @@ jobs:
   deploy:
     executor:
       name: default
+    environment:
+      MM_SERVICESETTINGS_SITEURL: http://134.122.71.100:8065
+      MM_ADMIN_USERNAME: gtsut16@freeuni.edu.ge
+      MM_ADMIN_PASSWORD: buJg#4V1g*
     steps:
 
       - checkout
-
-      - run: export MM_SERVICESETTINGS_SITEURL=http://134.122.71.100:8065
-      - run: export MM_ADMIN_USERNAME=gtsut16@freeuni.edu.ge
-      - run: export MM_ADMIN_PASSWORD=buJg#4V1g*
       - run: make deploy
         
   test_frontend:
