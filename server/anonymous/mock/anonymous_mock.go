@@ -136,3 +136,18 @@ func (mr *MockAnonymousMockRecorder) StoreUser(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreUser", reflect.TypeOf((*MockAnonymous)(nil).StoreUser), arg0)
 }
+
+// UnverifiedPlugins mocks base method
+func (m *MockAnonymous) UnverifiedPlugins() ([]anonymous.PluginIdentifier, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnverifiedPlugins")
+	ret0, _ := ret[0].([]anonymous.PluginIdentifier)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UnverifiedPlugins indicates an expected call of UnverifiedPlugins
+func (mr *MockAnonymousMockRecorder) UnverifiedPlugins() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnverifiedPlugins", reflect.TypeOf((*MockAnonymous)(nil).UnverifiedPlugins))
+}

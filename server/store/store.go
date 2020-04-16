@@ -20,3 +20,9 @@ func NewPluginStore(api plugin.API) Store {
 		userStore: store.NewPluginStore(api),
 	}
 }
+
+func NewPluginsStore(userStore store.KVStore) Store {
+	return &pluginStore{
+		userStore: userStore,
+	}
+}

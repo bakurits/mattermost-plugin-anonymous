@@ -16,6 +16,7 @@ type Anonymous interface {
 
 	StorePublicKey(publicKey crypto.PublicKey) error
 	GetPublicKey(userID string) (crypto.PublicKey, error)
+	UnverifiedPlugins() ([]PluginIdentifier, error)
 }
 
 // Dependencies contains all API dependencies
