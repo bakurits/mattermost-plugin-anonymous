@@ -3,10 +3,11 @@ package anonymous_test
 import (
 	"errors"
 	"fmt"
-	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
-	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous/mock"
 	"strings"
 	"testing"
+
+	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous/mock"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"

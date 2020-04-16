@@ -2,6 +2,7 @@ package anonymous
 
 import "github.com/pkg/errors"
 
+// PluginIdentifier unique plugin identifier
 type PluginIdentifier struct {
 	ID      string
 	Version string
