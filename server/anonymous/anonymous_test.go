@@ -115,7 +115,7 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := New(tt.fields.Config, tt.fields.actingMattermostUserID, tt.fields.PluginContext)
+			a := New(tt.fields.Config)
 			got, err := a.GetPublicKey(tt.fields.actingMattermostUserID)
 			test.CheckErr(tassert, tt.wantErr, err)
 			tassert.Equal(tt.want, got)
@@ -189,8 +189,8 @@ func Test_anonymous_StorePublicKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := New(tt.fields.Config, tt.fields.actingMattermostUserID, tt.fields.PluginContext)
-			err := a.StorePublicKey(tt.args.publicKey)
+			a := New(tt.fields.Config)
+			err := a.StorePublicKey(tt.fields.actingMattermostUserID, tt.args.publicKey)
 			test.CheckErr(tassert, tt.wantErr, err)
 		})
 	}

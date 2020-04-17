@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
 	mockStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store/mock"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/test"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
 )
 
 type stringLikeMatcher string

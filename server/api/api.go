@@ -27,16 +27,18 @@ type Error struct {
 // handler is an http.handler for all plugin HTTP endpoints
 type handler struct {
 	*mux.Router
+	an anonymous.Anonymous
 }
 
 // NewHTTPHandler initializes the router.
-func NewHTTPHandler() http.Handler {
-	return newHandler()
+func NewHTTPHandler(an anonymous.Anonymous) http.Handler {
+	return newHandler(an)
 }
 
-func newHandler() *handler {
+func newHandler(an anonymous.Anonymous) *handler {
 	h := &handler{
 		Router: mux.NewRouter(),
+		an:     an,
 	}
 	apiRouter := h.Router.PathPrefix(config.PathAPI).Subrouter()
 	apiRouter.HandleFunc("/pub_key", h.handleGetPublicKey()).Methods("GET")
@@ -77,20 +79,13 @@ func (h *handler) handleGetPublicKey() http.HandlerFunc {
 		var req request
 		err := schema.NewDecoder().Decode(&req, r.URL.Query())
 		if err != nil || req.UserID == "" {
-			h.jsonError(w, Error{
-				Message:    "Bad Request",
-				StatusCode: http.StatusBadRequest,
-			})
+			h.jsonError(w, Error{Message: "Bad Request", StatusCode: http.StatusBadRequest})
 			return
 		}
 
-		anonymousAPI := anonymous.FromContext(r.Context())
-		pubKey, err := anonymousAPI.GetPublicKey(req.UserID)
+		pubKey, err := h.an.GetPublicKey(req.UserID)
 		if err != nil || pubKey == nil {
-			h.jsonError(w, Error{
-				Message:    "public key doesn't exists",
-				StatusCode: http.StatusNoContent,
-			})
+			h.jsonError(w, Error{Message: "public key doesn't exists", StatusCode: http.StatusNoContent})
 			return
 		}
 
@@ -106,8 +101,7 @@ func (h *handler) handleSetPublicKey() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		anonymousAPI := anonymous.FromContext(r.Context())
-
+		mattermostUserID := r.Header.Get("Mattermost-User-ID")
 		var req request
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
@@ -121,7 +115,7 @@ func (h *handler) handleSetPublicKey() http.HandlerFunc {
 			return
 		}
 
-		err = anonymousAPI.StorePublicKey(pubKey)
+		err = h.an.StorePublicKey(mattermostUserID, pubKey)
 		if err != nil {
 			h.jsonError(w, Error{Message: "Not Authorized", StatusCode: http.StatusUnauthorized})
 			return
