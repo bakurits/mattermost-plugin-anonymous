@@ -1,6 +1,8 @@
 package anonymous
 
 import (
+	"sync"
+
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
@@ -16,7 +18,9 @@ type Anonymous interface {
 
 	StorePublicKey(publicKey crypto.PublicKey) error
 	GetPublicKey(userID string) (crypto.PublicKey, error)
-	UnverifiedPlugins() ([]PluginIdentifier, error)
+
+	UnverifiedPlugins() []PluginIdentifier
+	StartPluginChecks()
 }
 
 // Dependencies contains all API dependencies
@@ -41,7 +45,11 @@ type anonymous struct {
 	Config
 	actingMattermostUserID string
 	PluginContext          plugin.Context
-	VerifiedPlugins        map[PluginIdentifier]bool
+
+	verifiedPlugins map[PluginIdentifier]bool
+
+	unverifiedPluginsList []PluginIdentifier
+	unverifiedPluginsLock *sync.RWMutex // guards
 }
 
 // New returns new Anonymous API object
@@ -54,6 +62,8 @@ func newAnonymous(apiConfig Config, mattermostUserID string, ctx plugin.Context)
 		Config:                 apiConfig,
 		actingMattermostUserID: mattermostUserID,
 		PluginContext:          ctx,
+		unverifiedPluginsList:  []PluginIdentifier{},
+		unverifiedPluginsLock:  &sync.RWMutex{},
 	}
 
 	a.initializeValidatedPackages()
