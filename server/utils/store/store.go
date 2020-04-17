@@ -2,10 +2,16 @@ package store
 
 import (
 	"encoding/json"
+	"github.com/mattermost/mattermost-server/v5/model"
 
-	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/pkg/errors"
 )
+
+type StoreAPI interface {
+	KVGet(key string) ([]byte, *model.AppError)
+	KVSet(key string, value []byte) *model.AppError
+	KVDelete(key string) *model.AppError
+}
 
 // KVStore abstraction for plugin.API.KVStore
 type KVStore interface {
@@ -15,11 +21,11 @@ type KVStore interface {
 }
 
 type pluginStore struct {
-	api plugin.API
+	api StoreAPI
 }
 
 // NewPluginStore creates KVStore from plugin.API
-func NewPluginStore(api plugin.API) KVStore {
+func NewPluginStore(api StoreAPI) KVStore {
 	return &pluginStore{
 		api: api,
 	}

@@ -2,7 +2,6 @@ package store
 
 import (
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
-	"github.com/mattermost/mattermost-server/v5/plugin"
 )
 
 // Store encapsulates all store APIs
@@ -15,15 +14,15 @@ type pluginStore struct {
 }
 
 // NewPluginStore creates Store object from plugin.API
-func NewPluginStore(api plugin.API) Store {
+func NewPluginStore(api store.StoreAPI) Store {
 	return &pluginStore{
 		userStore: store.NewPluginStore(api),
 	}
 }
 
-// NewWithStores creates Store object from stores
-func NewWithStores(userStore store.KVStore) Store {
-	return &pluginStore{
-		userStore: userStore,
-	}
-}
+//// NewWithStores creates Store object from stores
+//func NewWithStores(userStore store.KVStore) Store {
+//	return &pluginStore{
+//		userStore: userStore,
+//	}
+//}
