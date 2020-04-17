@@ -45,7 +45,7 @@ func Test_pluginStore_DeleteUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	type fields struct {
-		storeAPI utilsStore.StoreAPI
+		storeAPI utilsStore.API
 	}
 	type args struct {
 		mattermostUserID string
@@ -102,7 +102,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	type fields struct {
-		storeAPI utilsStore.StoreAPI
+		storeAPI utilsStore.API
 	}
 	type args struct {
 		mattermostUserID string
@@ -175,7 +175,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	type fields struct {
-		storeAPI utilsStore.StoreAPI
+		storeAPI utilsStore.API
 	}
 	type args struct {
 		user *store.User

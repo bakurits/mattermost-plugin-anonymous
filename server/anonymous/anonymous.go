@@ -32,7 +32,7 @@ type Config struct {
 // PluginAPI API form mattermost plugin
 type PluginAPI interface {
 	SendEphemeralPost(userID string, post *model.Post) *model.Post
-	utils_store.StoreAPI
+	utils_store.API
 }
 
 type anonymous struct {

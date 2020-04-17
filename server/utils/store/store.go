@@ -7,7 +7,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-type StoreAPI interface {
+// API that store uses for interactions with KVStore
+type API interface {
 	KVGet(key string) ([]byte, *model.AppError)
 	KVSet(key string, value []byte) *model.AppError
 	KVDelete(key string) *model.AppError
@@ -21,11 +22,11 @@ type KVStore interface {
 }
 
 type pluginStore struct {
-	api StoreAPI
+	api API
 }
 
 // NewPluginStore creates KVStore from plugin.API
-func NewPluginStore(api StoreAPI) KVStore {
+func NewPluginStore(api API) KVStore {
 	return &pluginStore{
 		api: api,
 	}

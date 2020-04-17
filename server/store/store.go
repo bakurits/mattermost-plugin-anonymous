@@ -14,7 +14,7 @@ type pluginStore struct {
 }
 
 // NewPluginStore creates Store object from plugin.API
-func NewPluginStore(api store.StoreAPI) Store {
+func NewPluginStore(api store.API) Store {
 	return &pluginStore{
 		userStore: store.NewPluginStore(api),
 	}
