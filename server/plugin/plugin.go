@@ -50,13 +50,13 @@ func NewWithConfig(conf *config.Config) Plugin {
 }
 
 // NewWithStore creates new plugin object from configuration and store object
-func NewWithStore(mockStore store.Store, conf *config.Config) Plugin {
+func NewWithStore(store store.Store, conf *config.Config) Plugin {
 	p := &plugin{}
 
 	p.an = anonymous.New(anonymous.Config{
 		Config: conf,
 		Dependencies: &anonymous.Dependencies{
-			Store:     mockStore,
+			Store:     store,
 			PluginAPI: p,
 		},
 	})
