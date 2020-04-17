@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	mockPlugin "github.com/bakurits/mattermost-plugin-anonymous/server/plugin/mock"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
@@ -84,7 +83,6 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 			name: "basic test",
 			fields: fields{
 				Config: Config{
-					Config: &config.Config{},
 					Dependencies: &Dependencies{
 						PluginAPI: pluginMock,
 						Store:     storeMock,
@@ -100,7 +98,6 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 			name: "test empty",
 			fields: fields{
 				Config: Config{
-					Config: &config.Config{},
 					Dependencies: &Dependencies{
 						PluginAPI: pluginMock,
 						Store:     storeMock,
@@ -154,7 +151,6 @@ func Test_anonymous_StorePublicKey(t *testing.T) {
 			name: "basic test",
 			fields: fields{
 				Config: Config{
-					Config: &config.Config{},
 					Dependencies: &Dependencies{
 						PluginAPI: pluginMock,
 						Store:     storeMock,
@@ -172,7 +168,6 @@ func Test_anonymous_StorePublicKey(t *testing.T) {
 			name: "test empty",
 			fields: fields{
 				Config: Config{
-					Config: &config.Config{},
 					Dependencies: &Dependencies{
 						PluginAPI: pluginMock,
 						Store:     storeMock,

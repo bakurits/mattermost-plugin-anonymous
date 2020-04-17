@@ -4,7 +4,9 @@ import (
 	"github.com/bakurits/mattermost-plugin-anonymous/server/api"
 	"math/rand"
 	"net/http"
+	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	mattermostPlugin "github.com/mattermost/mattermost-server/v5/plugin"
@@ -32,29 +34,32 @@ type plugin struct {
 	httpHandler http.Handler
 
 	an anonymous.Anonymous
+
+	// configurationLock synchronizes access to the configuration.
+	configurationLock *sync.RWMutex
+
+	// configuration is the active plugin configuration. Consult getConfiguration and
+	// setConfiguration for usage.
+	config *config.Config
 }
 
 // NewWithConfig creates new plugin object from configuration
 func NewWithConfig(conf *config.Config) Plugin {
-	p := &plugin{}
-	pluginStore := store.NewPluginStore(p.API)
-	p.an = anonymous.New(anonymous.Config{
-		Config: conf,
-		Dependencies: &anonymous.Dependencies{
-			Store:     pluginStore,
-			PluginAPI: p,
-		},
-	})
-	p.httpHandler = api.NewHTTPHandler(p.an)
+	p := &plugin{
+		configurationLock: &sync.RWMutex{},
+		config:            conf,
+	}
 	return p
 }
 
 // NewWithStore creates new plugin object from configuration and store object
 func NewWithStore(store store.Store, conf *config.Config) Plugin {
-	p := &plugin{}
+	p := &plugin{
+		configurationLock: &sync.RWMutex{},
+		config:            conf,
+	}
 
 	p.an = anonymous.New(anonymous.Config{
-		Config: conf,
 		Dependencies: &anonymous.Dependencies{
 			Store:     store,
 			PluginAPI: p,
@@ -67,6 +72,18 @@ func NewWithStore(store store.Store, conf *config.Config) Plugin {
 // OnActivate called when plugin is activated
 func (p *plugin) OnActivate() error {
 	rand.Seed(time.Now().UnixNano())
+
+	if p.an == nil {
+		pluginStore := store.NewPluginStore(p.API)
+		p.an = anonymous.New(anonymous.Config{
+			Dependencies: &anonymous.Dependencies{
+				Store:     pluginStore,
+				PluginAPI: p,
+			},
+		})
+		p.httpHandler = api.NewHTTPHandler(p.an)
+	}
+
 	err := p.API.RegisterCommand(command.GetSlashCommand())
 	if err != nil {
 		return errors.Wrap(err, "OnActivate: failed to register command")
@@ -108,11 +125,52 @@ func (p *plugin) OnConfigurationChange() error {
 		return errors.Wrap(err, "failed to load plugin Config")
 	}
 
-	p.an.SetConfiguration(configuration)
+	p.setConfiguration(configuration)
 
 	return nil
 }
 
 func (p *plugin) ServeHTTP(_ *mattermostPlugin.Context, w http.ResponseWriter, req *http.Request) {
 	p.httpHandler.ServeHTTP(w, req)
+}
+
+// getConfiguration retrieves the active Config under lock, making it safe to use
+// concurrently. The active Config may change underneath the client of this method, but
+// the struct returned by this API call is considered immutable.
+func (p *plugin) getConfiguration() *config.Config {
+	p.configurationLock.RLock()
+	defer p.configurationLock.RUnlock()
+
+	if p.config == nil {
+		return &config.Config{}
+	}
+
+	return p.config
+}
+
+// setConfiguration replaces the active Config under lock.
+//
+// Do not call setConfiguration while holding the configurationLock, as sync.Mutex is not
+// re-entrant. In particular, avoid using the plugin API entirely, as this may in turn trigger a
+// hook back into the plugin. If that hook attempts to acquire this lock, a deadlock may occur.
+//
+// This method panics if setConfiguration is called with the existing Config. This almost
+// certainly means that the Config was modified without being cloned and may result in
+// an unsafe access.
+func (p *plugin) setConfiguration(configuration *config.Config) {
+	p.configurationLock.Lock()
+	defer p.configurationLock.Unlock()
+
+	if configuration != nil && p.config == configuration {
+		// Ignore assignment if the Config struct is empty. Go will optimize the
+		// allocation for same to point at the same memory address, breaking the check
+		// above.
+		if reflect.ValueOf(*configuration).NumField() == 0 {
+			return
+		}
+
+		panic("setConfiguration called with the existing Config")
+	}
+
+	p.config = configuration
 }

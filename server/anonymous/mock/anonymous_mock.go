@@ -5,7 +5,6 @@
 package mock
 
 import (
-	config "github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	crypto "github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	store "github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	gomock "github.com/golang/mock/gomock"
@@ -50,20 +49,6 @@ func (mr *MockAnonymousMockRecorder) DeleteUser(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockAnonymous)(nil).DeleteUser), arg0)
 }
 
-// GetConfiguration mocks base method
-func (m *MockAnonymous) GetConfiguration() *config.Config {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetConfiguration")
-	ret0, _ := ret[0].(*config.Config)
-	return ret0
-}
-
-// GetConfiguration indicates an expected call of GetConfiguration
-func (mr *MockAnonymousMockRecorder) GetConfiguration() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfiguration", reflect.TypeOf((*MockAnonymous)(nil).GetConfiguration))
-}
-
 // GetPublicKey mocks base method
 func (m *MockAnonymous) GetPublicKey(arg0 string) (crypto.PublicKey, error) {
 	m.ctrl.T.Helper()
@@ -106,18 +91,6 @@ func (m *MockAnonymous) SendEphemeralPost(arg0 string, arg1 *model.Post) *model.
 func (mr *MockAnonymousMockRecorder) SendEphemeralPost(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendEphemeralPost", reflect.TypeOf((*MockAnonymous)(nil).SendEphemeralPost), arg0, arg1)
-}
-
-// SetConfiguration mocks base method
-func (m *MockAnonymous) SetConfiguration(arg0 *config.Config) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetConfiguration", arg0)
-}
-
-// SetConfiguration indicates an expected call of SetConfiguration
-func (mr *MockAnonymousMockRecorder) SetConfiguration(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetConfiguration", reflect.TypeOf((*MockAnonymous)(nil).SetConfiguration), arg0)
 }
 
 // StorePublicKey mocks base method
