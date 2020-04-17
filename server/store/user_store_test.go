@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
-	utilsStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
 	"strings"
 	"testing"
+
+	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
+	utilsStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
 
 	mockStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store/mock"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/test"
