@@ -20,3 +20,10 @@ func NewPluginStore(api plugin.API) Store {
 		userStore: store.NewPluginStore(api),
 	}
 }
+
+// NewWithStores creates Store object from stores
+func NewWithStores(userStore store.KVStore) Store {
+	return &pluginStore{
+		userStore: userStore,
+	}
+}

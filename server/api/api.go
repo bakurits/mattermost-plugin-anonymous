@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gorilla/schema"
+
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
@@ -25,12 +27,18 @@ type Error struct {
 // handler is an http.handler for all plugin HTTP endpoints
 type handler struct {
 	*mux.Router
+	an anonymous.Anonymous
 }
 
 // NewHTTPHandler initializes the router.
-func NewHTTPHandler() http.Handler {
+func NewHTTPHandler(an anonymous.Anonymous) http.Handler {
+	return newHandler(an)
+}
+
+func newHandler(an anonymous.Anonymous) *handler {
 	h := &handler{
 		Router: mux.NewRouter(),
+		an:     an,
 	}
 	apiRouter := h.Router.PathPrefix(config.PathAPI).Subrouter()
 	apiRouter.HandleFunc("/pub_key", h.handleGetPublicKey()).Methods("GET")
@@ -52,27 +60,32 @@ func (h *handler) respondWithJSON(w http.ResponseWriter, data interface{}) {
 }
 
 func (h *handler) respondWithSuccess(w http.ResponseWriter) {
-	_, err := w.Write([]byte("{\"status\": \"OK\"}"))
-	if err != nil {
-		mlog.Error(err.Error())
-	}
+	h.respondWithJSON(w, struct {
+		Status string `json:"status"`
+	}{Status: "OK"})
 }
 
 // handleGetPublicKey handle get public key request
 func (h *handler) handleGetPublicKey() http.HandlerFunc {
 
+	type request struct {
+		UserID string `schema:"user_id"`
+	}
 	type response struct {
 		PublicKey string `json:"public_key"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		anonymousAPI := anonymous.FromContext(r.Context())
-		pubKey, err := anonymousAPI.GetPublicKey()
+		var req request
+		err := schema.NewDecoder().Decode(&req, r.URL.Query())
+		if err != nil || req.UserID == "" {
+			h.jsonError(w, Error{Message: "Bad Request", StatusCode: http.StatusBadRequest})
+			return
+		}
+
+		pubKey, err := h.an.GetPublicKey(req.UserID)
 		if err != nil || pubKey == nil {
-			h.jsonError(w, Error{
-				Message:    "public key doesn't exists",
-				StatusCode: http.StatusNoContent,
-			})
+			h.jsonError(w, Error{Message: "public key doesn't exists", StatusCode: http.StatusNoContent})
 			return
 		}
 
@@ -88,24 +101,23 @@ func (h *handler) handleSetPublicKey() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		anonymousAPI := anonymous.FromContext(r.Context())
-
+		mattermostUserID := r.Header.Get("Mattermost-User-ID")
 		var req request
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
-			h.jsonError(w, Error{Message: "Bad Request.", StatusCode: http.StatusBadRequest})
+			h.jsonError(w, Error{Message: "Bad Request", StatusCode: http.StatusBadRequest})
 			return
 		}
 
 		pubKey, err := crypto.PublicKeyFromString(req.PublicKey)
 		if err != nil {
-			h.jsonError(w, Error{Message: "Bad Request.", StatusCode: http.StatusBadRequest})
+			h.jsonError(w, Error{Message: "Public key format is incorrect", StatusCode: http.StatusBadRequest})
 			return
 		}
 
-		err = anonymousAPI.StorePublicKey(pubKey)
+		err = h.an.StorePublicKey(mattermostUserID, pubKey)
 		if err != nil {
-			h.jsonError(w, Error{Message: "Not authorized.", StatusCode: http.StatusUnauthorized})
+			h.jsonError(w, Error{Message: "Not Authorized", StatusCode: http.StatusUnauthorized})
 			return
 		}
 

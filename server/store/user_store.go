@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
 	"github.com/pkg/errors"

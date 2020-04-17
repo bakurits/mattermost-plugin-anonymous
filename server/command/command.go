@@ -102,7 +102,7 @@ func (c *command) executeKeyOverwrite(args ...string) (*model.CommandResponse, e
 		}
 	}
 
-	err = c.anonymous.StorePublicKey(pub)
+	err = c.anonymous.StorePublicKey(c.args.UserId, pub)
 	if err != nil {
 		return &model.CommandResponse{}, &model.AppError{
 			Message: err.Error(),

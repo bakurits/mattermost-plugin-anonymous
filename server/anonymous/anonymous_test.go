@@ -3,6 +3,9 @@ package anonymous
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	mockPlugin "github.com/bakurits/mattermost-plugin-anonymous/server/plugin/mock"
@@ -12,8 +15,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
 )
 
 type userIDMatcher string
@@ -31,7 +32,7 @@ func (s userIDMatcher) Matches(data interface{}) bool {
 }
 
 func (s userIDMatcher) String() string {
-	return fmt.Sprintf("should match with strings containging (%s)", string(s))
+	return fmt.Sprintf("should match with strings containing (%s)", string(s))
 }
 
 type stringLikeMatcher string
@@ -49,7 +50,7 @@ func (s stringLikeMatcher) Matches(data interface{}) bool {
 }
 
 func (s stringLikeMatcher) String() string {
-	return fmt.Sprintf("should match with strings containging ()")
+	return fmt.Sprintf("should match with strings containing ()")
 }
 
 func Test_anonymous_GetPublicKey(t *testing.T) {
@@ -114,8 +115,8 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := New(tt.fields.Config, tt.fields.actingMattermostUserID, tt.fields.PluginContext)
-			got, err := a.GetPublicKey()
+			a := New(tt.fields.Config)
+			got, err := a.GetPublicKey(tt.fields.actingMattermostUserID)
 			test.CheckErr(tassert, tt.wantErr, err)
 			tassert.Equal(tt.want, got)
 		})
@@ -188,8 +189,8 @@ func Test_anonymous_StorePublicKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := New(tt.fields.Config, tt.fields.actingMattermostUserID, tt.fields.PluginContext)
-			err := a.StorePublicKey(tt.args.publicKey)
+			a := New(tt.fields.Config)
+			err := a.StorePublicKey(tt.fields.actingMattermostUserID, tt.args.publicKey)
 			test.CheckErr(tassert, tt.wantErr, err)
 		})
 	}

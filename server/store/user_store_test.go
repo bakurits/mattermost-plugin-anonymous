@@ -1,16 +1,19 @@
-package store
+package store_test
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
+	"strings"
+	"testing"
+
+	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
+	utilsStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
+
 	mockStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store/mock"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/test"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
 )
 
 type stringLikeMatcher string
@@ -42,7 +45,7 @@ func Test_pluginStore_DeleteUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	type fields struct {
-		userStore store.KVStore
+		userStore utilsStore.KVStore
 	}
 	type args struct {
 		mattermostUserID string
@@ -76,9 +79,7 @@ func Test_pluginStore_DeleteUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &pluginStore{
-				userStore: tt.fields.userStore,
-			}
+			s := store.NewWithStores(tt.fields.userStore)
 
 			err := s.DeleteUser(tt.args.mattermostUserID)
 			test.CheckErr(tassert, tt.wantErr, err)
@@ -91,7 +92,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
 	m := mockStore.NewMockKVStore(ctrl)
-	dt, _ := json.Marshal(User{
+	dt, _ := json.Marshal(store.User{
 		MattermostUserID: "key_in",
 		PublicKey:        []byte{1},
 	})
@@ -101,7 +102,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	type fields struct {
-		userStore store.KVStore
+		userStore utilsStore.KVStore
 	}
 	type args struct {
 		mattermostUserID string
@@ -110,7 +111,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *User
+		want    *store.User
 		wantErr bool
 	}{
 		{
@@ -121,7 +122,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 			args: args{
 				mattermostUserID: "key_in",
 			},
-			want: &User{
+			want: &store.User{
 				MattermostUserID: "key_in",
 				PublicKey:        []byte{1},
 			},
@@ -152,9 +153,8 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &pluginStore{
-				userStore: tt.fields.userStore,
-			}
+			s := store.NewWithStores(tt.fields.userStore)
+
 			got, err := s.LoadUser(tt.args.mattermostUserID)
 			test.CheckErr(tassert, tt.wantErr, err)
 
@@ -175,10 +175,10 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	type fields struct {
-		userStore store.KVStore
+		userStore utilsStore.KVStore
 	}
 	type args struct {
-		user *User
+		user *store.User
 	}
 	tests := []struct {
 		name    string
@@ -192,7 +192,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 				userStore: m,
 			},
 			args: args{
-				user: &User{
+				user: &store.User{
 					MattermostUserID: "1",
 					PublicKey:        nil,
 				},
@@ -213,7 +213,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 				userStore: m,
 			},
 			args: args{
-				user: &User{
+				user: &store.User{
 					MattermostUserID: "cant_store",
 					PublicKey:        nil,
 				}},
@@ -223,9 +223,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &pluginStore{
-				userStore: tt.fields.userStore,
-			}
+			s := store.NewWithStores(tt.fields.userStore)
 
 			err := s.StoreUser(tt.args.user)
 			test.CheckErr(tassert, tt.wantErr, err)

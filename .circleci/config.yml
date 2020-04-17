@@ -41,6 +41,7 @@ jobs:
     steps:
 
       - checkout
+
       - run: make deploy
         
   test_frontend:
@@ -64,6 +65,7 @@ workflows:
       - lint
       - test_backend
       - test_frontend
+
       - deploy:
           requires:
             - test_frontend

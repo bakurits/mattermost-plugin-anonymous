@@ -1,6 +1,7 @@
-package command
+package command_test
 
 import (
+	"github.com/bakurits/mattermost-plugin-anonymous/server/command"
 	"strings"
 	"testing"
 
@@ -18,10 +19,10 @@ func Test_command_overwrite(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
 	a := mockAnonymous.NewMockAnonymous(ctrl)
-	a.EXPECT().StorePublicKey(gomock.Any()).Return(nil)
+	a.EXPECT().StorePublicKey(gomock.Any(), gomock.Any()).Return(nil)
 	a.EXPECT().SendEphemeralPost(gomock.Any(), gomock.Any()).Return(nil)
 	b := mockAnonymous.NewMockAnonymous(ctrl)
-	b.EXPECT().StorePublicKey(gomock.Any()).Return(&model.AppError{Message: "something went wrong while storing the key"})
+	b.EXPECT().StorePublicKey(gomock.Any(), gomock.Any()).Return(&model.AppError{Message: "something went wrong while storing the key"})
 	defer ctrl.Finish()
 
 	type fields struct {
@@ -99,7 +100,7 @@ func Test_command_overwrite(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			comm := NewHandler(tt.args.commandArgs, tt.fields.anonymous)
+			comm := command.NewHandler(tt.args.commandArgs, tt.fields.anonymous)
 			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
 			test.CheckErr(tassert, tt.wantErr, err)
 		})
@@ -164,20 +165,9 @@ func Test_command_other(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			comm := NewHandler(tt.args.commandArgs, tt.fields.anonymous)
+			comm := command.NewHandler(tt.args.commandArgs, tt.fields.anonymous)
 			_, err := comm.Handle(strings.Fields(tt.args.commandArgs.Command)...)
 			test.CheckErr(tassert, tt.wantErr, err)
 		})
 	}
-}
-func Test_utils(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	tassert := assert.New(t)
-	a := mockAnonymous.NewMockAnonymous(ctrl)
-	a.EXPECT().SendEphemeralPost(gomock.Any(), gomock.Any()).Return(nil).MaxTimes(3)
-	defer ctrl.Finish()
-
-	comm := newCommand(&model.CommandArgs{}, a)
-	tassert.Equal(comm.responsef("occurred error: %v", model.AppError{Message: "some error"}), &model.CommandResponse{})
-	tassert.Equal(comm.responseRedirect("somewhere"), &model.CommandResponse{GotoLocation: "somewhere"})
 }
