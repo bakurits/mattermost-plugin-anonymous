@@ -109,6 +109,18 @@ func (mr *MockAnonymousMockRecorder) SendEphemeralPost(arg0, arg1 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendEphemeralPost", reflect.TypeOf((*MockAnonymous)(nil).SendEphemeralPost), arg0, arg1)
 }
 
+// StartPluginChecks mocks base method
+func (m *MockAnonymous) StartPluginChecks() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "StartPluginChecks")
+}
+
+// StartPluginChecks indicates an expected call of StartPluginChecks
+func (mr *MockAnonymousMockRecorder) StartPluginChecks() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartPluginChecks", reflect.TypeOf((*MockAnonymous)(nil).StartPluginChecks))
+}
+
 // StorePublicKey mocks base method
 func (m *MockAnonymous) StorePublicKey(arg0 string, arg1 crypto.PublicKey) error {
 	m.ctrl.T.Helper()

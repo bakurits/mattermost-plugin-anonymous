@@ -1,10 +1,12 @@
-package anonymous
+package anonymous_test
 
 import (
 	"errors"
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	mockPlugin "github.com/bakurits/mattermost-plugin-anonymous/server/plugin/mock"
@@ -69,7 +71,7 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 	defer ctrl.Finish()
 
 	type fields struct {
-		Config                 Config
+		Config                 anonymous.Config
 		actingMattermostUserID string
 		PluginContext          plugin.Context
 	}
@@ -82,8 +84,8 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 		{
 			name: "basic test",
 			fields: fields{
-				Config: Config{
-					Dependencies: &Dependencies{
+				Config: anonymous.Config{
+					Dependencies: &anonymous.Dependencies{
 						PluginAPI: pluginMock,
 						Store:     storeMock,
 					},
@@ -97,8 +99,8 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 		{
 			name: "test empty",
 			fields: fields{
-				Config: Config{
-					Dependencies: &Dependencies{
+				Config: anonymous.Config{
+					Dependencies: &anonymous.Dependencies{
 						PluginAPI: pluginMock,
 						Store:     storeMock,
 					},
@@ -112,7 +114,7 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := New(tt.fields.Config)
+			a := anonymous.New(tt.fields.Config)
 			got, err := a.GetPublicKey(tt.fields.actingMattermostUserID)
 			test.CheckErr(tassert, tt.wantErr, err)
 			tassert.Equal(tt.want, got)
@@ -134,7 +136,7 @@ func Test_anonymous_StorePublicKey(t *testing.T) {
 	defer ctrl.Finish()
 
 	type fields struct {
-		Config                 Config
+		Config                 anonymous.Config
 		actingMattermostUserID string
 		PluginContext          plugin.Context
 	}
@@ -150,8 +152,8 @@ func Test_anonymous_StorePublicKey(t *testing.T) {
 		{
 			name: "basic test",
 			fields: fields{
-				Config: Config{
-					Dependencies: &Dependencies{
+				Config: anonymous.Config{
+					Dependencies: &anonymous.Dependencies{
 						PluginAPI: pluginMock,
 						Store:     storeMock,
 					},
@@ -167,8 +169,8 @@ func Test_anonymous_StorePublicKey(t *testing.T) {
 		{
 			name: "test empty",
 			fields: fields{
-				Config: Config{
-					Dependencies: &Dependencies{
+				Config: anonymous.Config{
+					Dependencies: &anonymous.Dependencies{
 						PluginAPI: pluginMock,
 						Store:     storeMock,
 					},
@@ -184,7 +186,7 @@ func Test_anonymous_StorePublicKey(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := New(tt.fields.Config)
+			a := anonymous.New(tt.fields.Config)
 			err := a.StorePublicKey(tt.fields.actingMattermostUserID, tt.args.publicKey)
 			test.CheckErr(tassert, tt.wantErr, err)
 		})

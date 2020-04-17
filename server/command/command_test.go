@@ -1,7 +1,6 @@
 package command_test
 
 import (
-	"github.com/bakurits/mattermost-plugin-anonymous/server/command"
 	"strings"
 	"testing"
 

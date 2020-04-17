@@ -2,7 +2,7 @@ package anonymous
 
 import (
 	"sync"
-	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
+
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	"github.com/mattermost/mattermost-server/v5/model"
@@ -14,8 +14,7 @@ type Anonymous interface {
 	PluginAPI
 	store.Store
 
-
-	StorePublicKey(publicKey crypto.PublicKey) error
+	StorePublicKey(userID string, publicKey crypto.PublicKey) error
 	GetPublicKey(userID string) (crypto.PublicKey, error)
 
 	UnverifiedPlugins() []PluginIdentifier
@@ -54,12 +53,12 @@ func New(apiConfig Config) Anonymous {
 
 func newAnonymous(apiConfig Config) *anonymous {
 	a := &anonymous{
-		Config:                 apiConfig,
-		unverifiedPluginsList:  []PluginIdentifier{},
-		unverifiedPluginsLock:  &sync.RWMutex{},
-  }
-  a.initializeValidatedPackages()
-  return a
+		Config:                apiConfig,
+		unverifiedPluginsList: []PluginIdentifier{},
+		unverifiedPluginsLock: &sync.RWMutex{},
+	}
+	a.initializeValidatedPackages()
+	return a
 }
 
 //StorePublicKey store public key in plugin's KeyValue Store
