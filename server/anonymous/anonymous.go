@@ -2,12 +2,10 @@ package anonymous
 
 import (
 	"sync"
-
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	"github.com/mattermost/mattermost-server/v5/model"
-	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/pkg/errors"
 )
 
@@ -15,6 +13,7 @@ import (
 type Anonymous interface {
 	PluginAPI
 	store.Store
+
 
 	StorePublicKey(publicKey crypto.PublicKey) error
 	GetPublicKey(userID string) (crypto.PublicKey, error)
@@ -31,7 +30,6 @@ type Dependencies struct {
 
 // Config Anonymous configuration
 type Config struct {
-	*config.Config
 	*Dependencies
 }
 
@@ -43,9 +41,6 @@ type PluginAPI interface {
 
 type anonymous struct {
 	Config
-	actingMattermostUserID string
-	PluginContext          plugin.Context
-
 	verifiedPlugins map[PluginIdentifier]bool
 
 	unverifiedPluginsList []PluginIdentifier
@@ -53,28 +48,24 @@ type anonymous struct {
 }
 
 // New returns new Anonymous API object
-func New(apiConfig Config, mattermostUserID string, ctx plugin.Context) Anonymous {
-	return newAnonymous(apiConfig, mattermostUserID, ctx)
+func New(apiConfig Config) Anonymous {
+	return newAnonymous(apiConfig)
 }
 
-func newAnonymous(apiConfig Config, mattermostUserID string, ctx plugin.Context) *anonymous {
+func newAnonymous(apiConfig Config) *anonymous {
 	a := &anonymous{
 		Config:                 apiConfig,
-		actingMattermostUserID: mattermostUserID,
-		PluginContext:          ctx,
 		unverifiedPluginsList:  []PluginIdentifier{},
 		unverifiedPluginsLock:  &sync.RWMutex{},
-	}
-
-	a.initializeValidatedPackages()
-
-	return a
+  }
+  a.initializeValidatedPackages()
+  return a
 }
 
 //StorePublicKey store public key in plugin's KeyValue Store
-func (a *anonymous) StorePublicKey(publicKey crypto.PublicKey) error {
+func (a *anonymous) StorePublicKey(userID string, publicKey crypto.PublicKey) error {
 	return a.StoreUser(&store.User{
-		MattermostUserID: a.actingMattermostUserID,
+		MattermostUserID: userID,
 		PublicKey:        publicKey,
 	})
 }
@@ -83,7 +74,7 @@ func (a *anonymous) StorePublicKey(publicKey crypto.PublicKey) error {
 func (a *anonymous) GetPublicKey(userID string) (crypto.PublicKey, error) {
 	user, err := a.LoadUser(userID)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error while loading a user %s", a.actingMattermostUserID)
+		return nil, errors.Wrapf(err, "Error while loading a user %s", userID)
 	}
 	return user.PublicKey, nil
 }

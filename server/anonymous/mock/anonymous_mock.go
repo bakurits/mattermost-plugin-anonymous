@@ -110,17 +110,17 @@ func (mr *MockAnonymousMockRecorder) SendEphemeralPost(arg0, arg1 interface{}) *
 }
 
 // StorePublicKey mocks base method
-func (m *MockAnonymous) StorePublicKey(arg0 crypto.PublicKey) error {
+func (m *MockAnonymous) StorePublicKey(arg0 string, arg1 crypto.PublicKey) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StorePublicKey", arg0)
+	ret := m.ctrl.Call(m, "StorePublicKey", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StorePublicKey indicates an expected call of StorePublicKey
-func (mr *MockAnonymousMockRecorder) StorePublicKey(arg0 interface{}) *gomock.Call {
+func (mr *MockAnonymousMockRecorder) StorePublicKey(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorePublicKey", reflect.TypeOf((*MockAnonymous)(nil).StorePublicKey), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorePublicKey", reflect.TypeOf((*MockAnonymous)(nil).StorePublicKey), arg0, arg1)
 }
 
 // StoreUser mocks base method

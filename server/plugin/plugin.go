@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"github.com/bakurits/mattermost-plugin-anonymous/server/api"
 	"math/rand"
 	"net/http"
 	"reflect"
@@ -13,7 +14,6 @@ import (
 	"github.com/mattermost/mattermost-server/v5/model"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
-	"github.com/bakurits/mattermost-plugin-anonymous/server/api"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/command"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
@@ -33,6 +33,8 @@ type plugin struct {
 
 	httpHandler http.Handler
 
+	an anonymous.Anonymous
+
 	// configurationLock synchronizes access to the configuration.
 	configurationLock *sync.RWMutex
 
@@ -43,17 +45,45 @@ type plugin struct {
 
 // NewWithConfig creates new plugin object from configuration
 func NewWithConfig(conf *config.Config) Plugin {
-	return &plugin{
+	p := &plugin{
 		configurationLock: &sync.RWMutex{},
 		config:            conf,
-		httpHandler:       api.NewHTTPHandler(),
+	}
+	return p
+}
+
+// NewWithStore creates new plugin object from configuration and store object
+func NewWithStore(store store.Store, conf *config.Config) Plugin {
+	p := &plugin{
+		configurationLock: &sync.RWMutex{},
+		config:            conf,
 	}
 
+	p.an = anonymous.New(anonymous.Config{
+		Dependencies: &anonymous.Dependencies{
+			Store:     store,
+			PluginAPI: p,
+		},
+	})
+	p.httpHandler = api.NewHTTPHandler(p.an)
+	return p
 }
 
 // OnActivate called when plugin is activated
 func (p *plugin) OnActivate() error {
 	rand.Seed(time.Now().UnixNano())
+
+	if p.an == nil {
+		pluginStore := store.NewPluginStore(p.API)
+		p.an = anonymous.New(anonymous.Config{
+			Dependencies: &anonymous.Dependencies{
+				Store:     pluginStore,
+				PluginAPI: p,
+			},
+		})
+		p.httpHandler = api.NewHTTPHandler(p.an)
+	}
+
 	err := p.API.RegisterCommand(command.GetSlashCommand())
 	if err != nil {
 		return errors.Wrap(err, "OnActivate: failed to register command")
@@ -62,14 +92,13 @@ func (p *plugin) OnActivate() error {
 }
 
 // ExecuteCommand hook is called when slash command is submitted
-func (p *plugin) ExecuteCommand(c *mattermostPlugin.Context, commandArgs *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
+func (p *plugin) ExecuteCommand(_ *mattermostPlugin.Context, commandArgs *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	mattermostUserID := commandArgs.UserId
 	if len(mattermostUserID) == 0 {
 		return &model.CommandResponse{}, &model.AppError{Message: "Not authorized"}
 	}
 
-	an := anonymous.New(p.newAnonymousConfig(), mattermostUserID, *c)
-	commandHandler := command.NewHandler(commandArgs, an)
+	commandHandler := command.NewHandler(commandArgs, p.an)
 	args := strings.Fields(commandArgs.Command)
 
 	commandResponse, err := commandHandler.Handle(args...)
@@ -85,6 +114,24 @@ func (p *plugin) ExecuteCommand(c *mattermostPlugin.Context, commandArgs *model.
 		Message: err.Error(),
 	}
 
+}
+
+// OnConfigurationChange is invoked when Config changes may have been made.
+func (p *plugin) OnConfigurationChange() error {
+	var configuration = new(config.Config)
+
+	// Load the public Config fields from the Mattermost server Config.
+	if err := p.API.LoadPluginConfiguration(configuration); err != nil {
+		return errors.Wrap(err, "failed to load plugin Config")
+	}
+
+	p.setConfiguration(configuration)
+
+	return nil
+}
+
+func (p *plugin) ServeHTTP(_ *mattermostPlugin.Context, w http.ResponseWriter, req *http.Request) {
+	p.httpHandler.ServeHTTP(w, req)
 }
 
 // getConfiguration retrieves the active Config under lock, making it safe to use
@@ -126,45 +173,4 @@ func (p *plugin) setConfiguration(configuration *config.Config) {
 	}
 
 	p.config = configuration
-}
-
-// OnConfigurationChange is invoked when Config changes may have been made.
-func (p *plugin) OnConfigurationChange() error {
-	var configuration = new(config.Config)
-
-	// Load the public Config fields from the Mattermost server Config.
-	if err := p.API.LoadPluginConfiguration(configuration); err != nil {
-		return errors.Wrap(err, "failed to load plugin Config")
-	}
-
-	p.setConfiguration(configuration)
-
-	return nil
-}
-
-func (p *plugin) ServeHTTP(pc *mattermostPlugin.Context, w http.ResponseWriter, req *http.Request) {
-	mattermostUserID := req.Header.Get("Mattermost-User-ID")
-	if mattermostUserID == "" {
-		http.Error(w, "Not Authorized", http.StatusUnauthorized)
-	}
-
-	apiConf := p.newAnonymousConfig()
-
-	ctx := req.Context()
-	ctx = config.Context(ctx, p.config)
-	ctx = anonymous.Context(ctx, anonymous.New(apiConf, mattermostUserID, *pc))
-	p.httpHandler.ServeHTTP(w, req.WithContext(ctx))
-}
-
-func (p *plugin) newAnonymousConfig() anonymous.Config {
-	conf := p.getConfiguration()
-	pluginStore := store.NewPluginStore(p.API)
-
-	return anonymous.Config{
-		Config: conf,
-		Dependencies: &anonymous.Dependencies{
-			Store:     pluginStore,
-			PluginAPI: p,
-		},
-	}
 }

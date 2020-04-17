@@ -8,7 +8,8 @@ import (
 	"testing"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
-	utilStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
+	utilsStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
+
 	mockStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store/mock"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/test"
 	"github.com/golang/mock/gomock"
@@ -44,7 +45,7 @@ func Test_pluginStore_DeleteUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	type fields struct {
-		userStore utilStore.KVStore
+		userStore utilsStore.KVStore
 	}
 	type args struct {
 		mattermostUserID string
@@ -78,7 +79,7 @@ func Test_pluginStore_DeleteUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := store.NewPluginsStore(tt.fields.userStore)
+			s := store.NewWithStores(tt.fields.userStore)
 
 			err := s.DeleteUser(tt.args.mattermostUserID)
 			test.CheckErr(tassert, tt.wantErr, err)
@@ -101,7 +102,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	type fields struct {
-		userStore utilStore.KVStore
+		userStore utilsStore.KVStore
 	}
 	type args struct {
 		mattermostUserID string
@@ -152,7 +153,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := store.NewPluginsStore(tt.fields.userStore)
+			s := store.NewWithStores(tt.fields.userStore)
 
 			got, err := s.LoadUser(tt.args.mattermostUserID)
 			test.CheckErr(tassert, tt.wantErr, err)
@@ -174,7 +175,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	type fields struct {
-		userStore utilStore.KVStore
+		userStore utilsStore.KVStore
 	}
 	type args struct {
 		user *store.User
@@ -222,7 +223,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := store.NewPluginsStore(tt.fields.userStore)
+			s := store.NewWithStores(tt.fields.userStore)
 
 			err := s.StoreUser(tt.args.user)
 			test.CheckErr(tassert, tt.wantErr, err)
