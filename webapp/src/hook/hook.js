@@ -18,7 +18,7 @@ export default class Hooks {
         let response;
         let pubKeyString;
         if (commands.length == 0)
-            return Promise.resolve({message, args: contextArgs});
+            return Promise.resolve({message: '/anonymous', args: args});
 
         switch (commands[0]) {
         case '--generate':
@@ -53,7 +53,7 @@ export default class Hooks {
         default:
             break;
         }
-        return Promise.resolve({message, args: contextArgs});
+        return Promise.resolve({message: '/anonymous ' + commands[0], args: args});
 
     };
 
