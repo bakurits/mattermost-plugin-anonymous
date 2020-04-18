@@ -74,7 +74,7 @@ func (p *plugin) OnActivate() error {
 	rand.Seed(time.Now().UnixNano())
 
 	if p.an == nil {
-		pluginStore := store.NewPluginStore(p.API)
+		pluginStore := store.NewPluginStore(p)
 		p.an = anonymous.New(anonymous.Config{
 			Dependencies: &anonymous.Dependencies{
 				Store:     pluginStore,

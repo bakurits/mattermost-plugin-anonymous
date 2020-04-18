@@ -35,6 +35,49 @@ func (m *MockPlugin) EXPECT() *MockPluginMockRecorder {
 	return m.recorder
 }
 
+// KVDelete mocks base method
+func (m *MockPlugin) KVDelete(arg0 string) *model.AppError {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KVDelete", arg0)
+	ret0, _ := ret[0].(*model.AppError)
+	return ret0
+}
+
+// KVDelete indicates an expected call of KVDelete
+func (mr *MockPluginMockRecorder) KVDelete(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KVDelete", reflect.TypeOf((*MockPlugin)(nil).KVDelete), arg0)
+}
+
+// KVGet mocks base method
+func (m *MockPlugin) KVGet(arg0 string) ([]byte, *model.AppError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KVGet", arg0)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(*model.AppError)
+	return ret0, ret1
+}
+
+// KVGet indicates an expected call of KVGet
+func (mr *MockPluginMockRecorder) KVGet(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KVGet", reflect.TypeOf((*MockPlugin)(nil).KVGet), arg0)
+}
+
+// KVSet mocks base method
+func (m *MockPlugin) KVSet(arg0 string, arg1 []byte) *model.AppError {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KVSet", arg0, arg1)
+	ret0, _ := ret[0].(*model.AppError)
+	return ret0
+}
+
+// KVSet indicates an expected call of KVSet
+func (mr *MockPluginMockRecorder) KVSet(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KVSet", reflect.TypeOf((*MockPlugin)(nil).KVSet), arg0, arg1)
+}
+
 // OnActivate mocks base method
 func (m *MockPlugin) OnActivate() error {
 	m.ctrl.T.Helper()
