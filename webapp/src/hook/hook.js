@@ -17,8 +17,9 @@ export default class Hooks {
         let publicKey;
         let response;
         let pubKeyString;
-        if (commands.length == 0)
-            return Promise.resolve({message: '/anonymous', args: args});
+        if (commands.length === 0) {
+            return Promise.resolve({message: '/anonymous keypair', args});
+        }
 
         switch (commands[0]) {
         case '--generate':
@@ -53,8 +54,7 @@ export default class Hooks {
         default:
             break;
         }
-        return Promise.resolve({message: '/anonymous ' + commands[0], args: args});
-
+        return Promise.resolve({message: '/anonymous keypair' + commands[0], args});
     };
 
     slashCommandWillBePostedHook = (message, contextArgs) => {
