@@ -5,7 +5,6 @@ import (
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/pkg/errors"
-	"sync"
 )
 
 // Anonymous API for business logic
@@ -50,10 +49,6 @@ func New(apiConfig Config) Anonymous {
 func newAnonymous(apiConfig Config) *anonymous {
 	a := &anonymous{
 		Config: apiConfig,
-		pluginVerificationTracker: &pluginVerificationTracker{
-			unverifiedPluginsList: []PluginIdentifier{},
-			unverifiedPluginsLock: &sync.RWMutex{},
-		},
 	}
 	a.initializeValidatedPackages()
 	return a

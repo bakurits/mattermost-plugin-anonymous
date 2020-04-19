@@ -70,5 +70,10 @@ func (a *anonymous) checkPluginsVerificationStatus() ([]PluginIdentifier, error)
 }
 
 func (a *anonymous) initializeValidatedPackages() {
-	a.pluginVerificationTracker.verifiedPlugins = map[PluginIdentifier]bool{}
+	a.pluginVerificationTracker = &pluginVerificationTracker{
+		unverifiedPluginsList: []PluginIdentifier{},
+		unverifiedPluginsLock: &sync.RWMutex{},
+
+		verifiedPlugins: map[PluginIdentifier]bool{},
+	}
 }
