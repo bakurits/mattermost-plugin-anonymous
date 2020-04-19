@@ -1,12 +1,11 @@
 package anonymous
 
 import (
-	"sync"
-
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/pkg/errors"
+	"sync"
 )
 
 // Anonymous API for business logic
@@ -40,10 +39,7 @@ type PluginAPI interface {
 
 type anonymous struct {
 	Config
-	verifiedPlugins map[PluginIdentifier]bool
-
-	unverifiedPluginsList []PluginIdentifier
-	unverifiedPluginsLock *sync.RWMutex // guards
+	pluginVerificationTracker *pluginVerificationTracker
 }
 
 // New returns new Anonymous API object
@@ -53,9 +49,11 @@ func New(apiConfig Config) Anonymous {
 
 func newAnonymous(apiConfig Config) *anonymous {
 	a := &anonymous{
-		Config:                apiConfig,
-		unverifiedPluginsList: []PluginIdentifier{},
-		unverifiedPluginsLock: &sync.RWMutex{},
+		Config: apiConfig,
+		pluginVerificationTracker: &pluginVerificationTracker{
+			unverifiedPluginsList: []PluginIdentifier{},
+			unverifiedPluginsLock: &sync.RWMutex{},
+		},
 	}
 	a.initializeValidatedPackages()
 	return a

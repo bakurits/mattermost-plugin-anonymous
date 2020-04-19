@@ -2,6 +2,7 @@ package anonymous
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/mattermost/mattermost-server/v5/mlog"
@@ -14,12 +15,21 @@ type PluginIdentifier struct {
 	Version string
 }
 
+type pluginVerificationTracker struct {
+	verifiedPlugins map[PluginIdentifier]bool
+
+	unverifiedPluginsList []PluginIdentifier
+
+	// unverifiedPluginsLock guards unverifiedPluginsList
+	unverifiedPluginsLock *sync.RWMutex
+}
+
 // UnverifiedPlugins returns list of unverified plugins
 func (a *anonymous) UnverifiedPlugins() []PluginIdentifier {
-	a.unverifiedPluginsLock.RLock()
-	defer a.unverifiedPluginsLock.RUnlock()
+	a.pluginVerificationTracker.unverifiedPluginsLock.RLock()
+	defer a.pluginVerificationTracker.unverifiedPluginsLock.RUnlock()
 
-	return a.unverifiedPluginsList
+	return a.pluginVerificationTracker.unverifiedPluginsList
 }
 
 // StartPluginChecks starts checking unverified plugins
@@ -28,20 +38,20 @@ func (a *anonymous) StartPluginChecks() {
 		for now := range time.Tick(time.Hour) {
 			mlog.Info(fmt.Sprintf("started updating validated plugins %s", now.String()))
 
-			plugins, err := a.unverifiedPlugins()
+			plugins, err := a.checkPluginsVerificationStatus()
 			if err != nil {
 				mlog.Error(err.Error())
 				return
 			}
 
-			a.unverifiedPluginsLock.Lock()
-			a.unverifiedPluginsList = plugins
-			a.unverifiedPluginsLock.Unlock()
+			a.pluginVerificationTracker.unverifiedPluginsLock.Lock()
+			a.pluginVerificationTracker.unverifiedPluginsList = plugins
+			a.pluginVerificationTracker.unverifiedPluginsLock.Unlock()
 		}
 	}()
 }
 
-func (a *anonymous) unverifiedPlugins() ([]PluginIdentifier, error) {
+func (a *anonymous) checkPluginsVerificationStatus() ([]PluginIdentifier, error) {
 
 	activePlugins, err := a.PluginAPI.GetActivePlugins()
 	if err != nil {
@@ -51,7 +61,7 @@ func (a *anonymous) unverifiedPlugins() ([]PluginIdentifier, error) {
 	var plugins []PluginIdentifier
 
 	for _, plugin := range activePlugins {
-		if _, ok := a.verifiedPlugins[plugin]; !ok {
+		if _, ok := a.pluginVerificationTracker.verifiedPlugins[plugin]; !ok {
 			plugins = append(plugins, plugin)
 		}
 	}
@@ -60,11 +70,5 @@ func (a *anonymous) unverifiedPlugins() ([]PluginIdentifier, error) {
 }
 
 func (a *anonymous) initializeValidatedPackages() {
-
-	a.verifiedPlugins = map[PluginIdentifier]bool{
-		{
-			ID:      "",
-			Version: "",
-		}: true,
-	}
+	a.pluginVerificationTracker.verifiedPlugins = map[PluginIdentifier]bool{}
 }
