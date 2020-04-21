@@ -72,4 +72,15 @@ export default class Hooks {
 
         return Promise.resolve({message, args: contextArgs});
     }
+
+    messageWillFormatHook = (post) => {
+        // message text in database
+        const {message} = post;
+
+        // here is public key if needed
+        // eslint-disable-next-line no-unused-vars
+        const {props} = post;
+
+        return message;
+    }
 }
