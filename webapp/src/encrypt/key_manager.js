@@ -20,7 +20,7 @@ export async function generateAndStoreKeyPair() {
     if (keys === null) {
         return null;
     }
-    return storeKeyPair(keys.privateKey, keys.privateKey);
+    return storeKeyPair(keys.privateKey, keys.publicKey);
 }
 
 //store private key in a local storage
