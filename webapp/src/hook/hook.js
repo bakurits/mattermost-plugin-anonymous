@@ -8,7 +8,7 @@ import {
 } from '../encrypt/key_manager';
 import {sendEphemeralPost} from '../actions/actions';
 import Client from '../api_client';
-import {encrypt} from '../encrypt/encrypt';
+import {decrypt, encrypt} from '../encrypt/encrypt';
 
 export default class Hooks {
     constructor(store, settings) {
@@ -70,10 +70,10 @@ export default class Hooks {
         const encrypted = await Promise.all(publicKeys.map((publicKey) => {
             // eslint-disable-next-line no-console
             console.log(Buffer.from(publicKey.public_key, 'base64'));
-            return encrypt(Buffer.from(publicKey.public_key, 'base64'), commands).then((data) => {
+            return encrypt(Buffer.from(publicKey.public_key, 'base64'), commands[0]).then((data) => {
                 return {
                     data,
-                    public_key: publicKey,
+                    public_key: publicKey.public_key,
                 };
             });
         }));
@@ -155,6 +155,41 @@ export default class Hooks {
         // eslint-disable-next-line no-console
         console.log(props);
 
-        return message;
+        if (!props.public_key) {
+            return message;
+        }
+
+        const privateKey = getPrivateKey();
+        const publicKey = getPublicKeyFromPrivateKey(privateKey);
+
+        // eslint-disable-next-line no-console
+        console.log(privateKey);
+        // eslint-disable-next-line no-console
+        console.log(publicKey.toString('base64'));
+        if (props.public_key !== publicKey.toString('base64')) {
+            return '';
+        }
+
+        const messageJson = JSON.parse(message);
+
+        const encrypted = {};
+        encrypted.ciphertext = Buffer.from(messageJson.ciphertext, 'base64');
+
+        // eslint-disable-next-line no-console
+        console.log(Buffer.from(messageJson.ciphertext, 'base64'));
+
+        encrypted.ephemPublicKey = Buffer.from(messageJson.ephemPublicKey, 'base64');
+        encrypted.iv = Buffer.from(messageJson.iv, 'base64');
+        // eslint-disable-next-line no-console
+        console.log(Buffer.from(messageJson.iv, 'base64'));
+        encrypted.mac = Buffer.from(messageJson.mac, 'base64');
+
+        // eslint-disable-next-line no-console
+        console.log(encrypted);
+        return decrypt(privateKey, encrypted).then((plaintext) => {
+            // eslint-disable-next-line no-console
+            console.log(plaintext.toString());
+            return plaintext.toString();
+        });
     }
 }

@@ -6,9 +6,7 @@ export function encrypt(publicKey, message) {
 }
 
 // decrypts cipher text and executes callback with plain text
-export function decrypt(privateKey, encrypted, callback) {
-    eccrypto.decrypt(privateKey, encrypted).then((plaintext) => {
-        callback(JSON.parse(plaintext));
-    });
+export async function decrypt(privateKey, encrypted) {
+    return eccrypto.decrypt(privateKey, encrypted);
 }
 
