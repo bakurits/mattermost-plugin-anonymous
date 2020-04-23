@@ -1,12 +1,28 @@
 import Client from '../api_client';
 
-const eccrypto = require('eccrypto');
+const crypto = require('crypto');
 const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
+const RSA_KEY_SIZE = 4096;
+
+export function privateKeyToString(privateKey) {
+    return privateKey.export({
+        type: 'pkcs1',
+        format: 'pem',
+    });
+}
+
+export function publicKeyToString(publicKey) {
+    return publicKey.export({
+        type: 'pkcs1',
+        format: 'pem',
+    });
+}
 
 // generates ECIES private, public key pair and executes with callback
 export function generateKeyPair() {
-    const privateKey = eccrypto.generatePrivate();
-    const publicKey = getPublicKeyFromPrivateKey(privateKey);
+    const {publicKey, privateKey} = crypto.generateKeyPairSync('rsa', {
+        modulusLength: RSA_KEY_SIZE,
+    });
     if (publicKey === null) {
         return null;
     }
@@ -25,15 +41,13 @@ export async function generateAndStoreKeyPair() {
 
 //store private key in a local storage
 export async function storeKeyPair(privateKey, publicKey) {
-    const pr = privateKey.toString('base64');
-    localStorage.setItem(LOCAL_STORAGE_KEY, pr);
+    storePrivateKey(privateKey);
     return Client.storePublicKey(publicKey);
 }
 
 // get getKeyPair returns key pair
 export function getKeyPair() {
-    const pr = localStorage.getItem(LOCAL_STORAGE_KEY);
-    const privateKey = Buffer.from(pr, 'base64');
+    const privateKey = getPrivateKey();
     const publicKey = getPublicKeyFromPrivateKey(privateKey);
     if (privateKey === null) {
         return null;
@@ -44,7 +58,7 @@ export function getKeyPair() {
 // generate public key using private key (buffer)
 export function getPublicKeyFromPrivateKey(privateKey) {
     try {
-        return eccrypto.getPublic(privateKey);
+        return crypto.createPublicKey(privateKey);
     } catch (e) {
         return null;
     }
@@ -52,12 +66,10 @@ export function getPublicKeyFromPrivateKey(privateKey) {
 
 // only store private key (buffer)
 export function storePrivateKey(privateKey) {
-    const pr = privateKey.toString('base64');
-    localStorage.setItem(LOCAL_STORAGE_KEY, pr);
+    localStorage.setItem(LOCAL_STORAGE_KEY, privateKeyToString(privateKey));
 }
 
 // get private key
 export function getPrivateKey() {
-    const privateKey = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return Buffer.from(privateKey, 'base64');
+    return crypto.createPrivateKey(localStorage.getItem(LOCAL_STORAGE_KEY));
 }
