@@ -2,48 +2,42 @@
 import 'mattermost-webapp/tests/setup';
 import {decrypt, encrypt} from '../src/encrypt/encrypt';
 import {
-    generateKeyPair,
-    getKeyPair,
-    getPublicKeyFromPrivateKey,
+    generateKeyPair, loadKey, publicKeyToString,
     storePrivateKey,
 } from '../src/encrypt/key_manager';
 
 test('should be decrypted same', () => {
-    const keys = generateKeyPair();
-    const pr = keys.privateKey;
-    const pb = keys.publicKey;
+    const key = generateKeyPair();
 
     const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
     testsInput.forEach((test) => {
-        const enc = encrypt(pb, test);
-        const dec = decrypt(pr, enc);
+        const enc = encrypt(key, test);
+
+        const dec = decrypt(key, enc);
+
         expect(dec).toStrictEqual(test);
     });
 });
 
 test('storing key in local storage', () => {
-    const keys1 = generateKeyPair();
-    storePrivateKey(keys1.privateKey);
-    const keys2 = getKeyPair();
-    expect(keys1.publicKey).toStrictEqual(keys2.publicKey);
-});
-
-test('test get public key from private', () => {
-    const keys = generateKeyPair();
-    const a = getPublicKeyFromPrivateKey(keys.privateKey);
-    expect(a).toStrictEqual(keys.publicKey);
+    const key1 = generateKeyPair();
+    storePrivateKey(key1);
+    const key2 = loadKey();
+    const s1 = publicKeyToString(key1);
+    const s2 = publicKeyToString(key2);
+    expect(s1).toStrictEqual(s2);
 });
 
 test('should be decrypted same with stored keys', () => {
-    const keys = generateKeyPair();
-    storePrivateKey(keys.privateKey);
+    const key = generateKeyPair();
+    storePrivateKey(key);
 
-    const storedKeys = getKeyPair();
+    const storedKey = loadKey();
 
     const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
     testsInput.forEach((test) => {
-        const enc = encrypt(keys.publicKey, test);
-        const dec = decrypt(storedKeys.privateKey, enc);
+        const enc = encrypt(key, test);
+        const dec = decrypt(storedKey, enc);
         expect(dec).toStrictEqual(test);
     });
 });
