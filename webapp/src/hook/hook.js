@@ -2,8 +2,7 @@ import {Client4} from 'mattermost-redux/client';
 
 import {
     generateAndStoreKeyPair,
-    getPrivateKey,
-    getPublicKeyFromPrivateKey,
+    keyFromString, loadKey, publicKeyToString, privateKeyToString,
     storePrivateKey,
 } from '../encrypt/key_manager';
 import {sendEphemeralPost} from '../actions/actions';
@@ -17,10 +16,8 @@ export default class Hooks {
     }
 
     handleKeyPair = async (commands, args) => {
-        let privateKey;
-        let publicKey;
+        let key;
         let response;
-        let pubKeyString;
         switch (commands[0]) {
         case '--generate':
             response = await generateAndStoreKeyPair();
@@ -37,70 +34,52 @@ export default class Hooks {
             if (commands.length > 2) {
                 return Promise.resolve({error: {message: 'Too many arguments'}});
             }
-            privateKey = Buffer.from(commands[1], 'base64');
-            publicKey = getPublicKeyFromPrivateKey(privateKey);
-            if (!publicKey) {
+
+            key = keyFromString(commands[1]);
+            if (!key) {
                 return Promise.resolve({error: {message: 'Invalid private key'}});
             }
 
-            pubKeyString = publicKey.toString('base64');
-            storePrivateKey(privateKey);
-            return Promise.resolve({message: '/anonymous keypair --overwrite ' + pubKeyString, args});
+            storePrivateKey(key);
+            return Promise.resolve({message: '/anonymous keypair --overwrite ' + publicKeyToString(key), args});
 
         case '--export':
-            privateKey = getPrivateKey();
-            this.store.dispatch(sendEphemeralPost('Your private key:\n' + privateKey.toString('base64'), args.channel_id));
+            key = loadKey();
+            this.store.dispatch(sendEphemeralPost('Your private key:\n' + privateKeyToString(key), args.channel_id));
             return Promise.resolve({});
         default:
             break;
         }
         return Promise.resolve({});
     };
+
     handlePost = async (commands, args) => {
         const users = await Client4.getProfilesInChannel(args.channel_id);
         // eslint-disable-next-line no-console
         console.log(users);
 
         const publicKeys = await Promise.all(users.map((user) => {
-            return Client.retrievePublicKey(user.id);
+            return Client.retrievePublicKey(user.id).then((data) => {
+                return Buffer.from(data.public_key, 'base64').toString();
+            });
         }));
         // eslint-disable-next-line no-console
         console.log(publicKeys);
 
-        const encrypted = await Promise.all(publicKeys.map((publicKey) => {
+        const encrypted = await Promise.all(publicKeys.map((keyString) => {
+            const key = keyFromString(keyString);
             // eslint-disable-next-line no-console
-            console.log(Buffer.from(publicKey.public_key, 'base64'));
-            return encrypt(Buffer.from(publicKey.public_key, 'base64'), commands[0]).then((data) => {
-                return {
-                    data,
-                    public_key: publicKey.public_key,
-                };
-            });
+            console.log(publicKeyToString(key));
+            const message = encrypt(key, commands[0]).toString('base64');
+            return {
+                message,
+                public_key: keyString,
+            };
         }));
         // eslint-disable-next-line no-console
         console.log(encrypted);
 
-        const messages = encrypted.map((cypherObjectWithPublicKey) => {
-            const {data} = cypherObjectWithPublicKey;
-            const publicKey = cypherObjectWithPublicKey.public_key;
-            const message = JSON.stringify(
-                {
-                    ciphertext: data.ciphertext.toString('base64'),
-                    ephemPublicKey: data.ephemPublicKey.toString('base64'),
-                    iv: data.iv.toString('base64'),
-                    mac: data.mac.toString('base64'),
-                }
-            );
-
-            return {
-                message,
-                public_key: publicKey,
-            };
-        });
-        // eslint-disable-next-line no-console
-        console.log(messages);
-
-        const result = await Promise.all(messages.map((messageData) => {
+        const result = await Promise.all(encrypted.map((messageData) => {
             const {message} = messageData;
             // eslint-disable-next-line no-console
             return Client4.createPost({
@@ -159,37 +138,20 @@ export default class Hooks {
             return message;
         }
 
-        const privateKey = getPrivateKey();
-        const publicKey = getPublicKeyFromPrivateKey(privateKey);
+        const key = loadKey();
+        // eslint-disable-next-line no-console
+        console.log(key);
 
-        // eslint-disable-next-line no-console
-        console.log(privateKey);
-        // eslint-disable-next-line no-console
-        console.log(publicKey.toString('base64'));
-        if (props.public_key !== publicKey.toString('base64')) {
+        if (props.public_key !== publicKeyToString(key)) {
             return '';
         }
 
-        const messageJson = JSON.parse(message);
-
-        const encrypted = {};
-        encrypted.ciphertext = Buffer.from(messageJson.ciphertext, 'base64');
-
+        const res = decrypt(key, Buffer.from(message, 'base64'));
         // eslint-disable-next-line no-console
-        console.log(Buffer.from(messageJson.ciphertext, 'base64'));
-
-        encrypted.ephemPublicKey = Buffer.from(messageJson.ephemPublicKey, 'base64');
-        encrypted.iv = Buffer.from(messageJson.iv, 'base64');
+        console.log('jjj');
         // eslint-disable-next-line no-console
-        console.log(Buffer.from(messageJson.iv, 'base64'));
-        encrypted.mac = Buffer.from(messageJson.mac, 'base64');
+        console.log(res);
 
-        // eslint-disable-next-line no-console
-        console.log(encrypted);
-        return decrypt(privateKey, encrypted).then((plaintext) => {
-            // eslint-disable-next-line no-console
-            console.log(plaintext.toString());
-            return plaintext.toString();
-        });
+        return res;
     }
 }

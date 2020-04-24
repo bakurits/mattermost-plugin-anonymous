@@ -5,6 +5,10 @@ export function encrypt(key, message) {
 
 // decrypts cipher text and executes callback with plain text
 export function decrypt(key, encrypted) {
-    return key.decrypt(encrypted, 'json');
+    try {
+        return key.decrypt(encrypted, 'json');
+    } catch (e) {
+        return null;
+    }
 }
 

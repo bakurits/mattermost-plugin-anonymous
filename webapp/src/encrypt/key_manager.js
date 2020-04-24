@@ -5,21 +5,35 @@ const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
 const RSA_KEY_SIZE = 512;
 
 export function privateKeyToString(key) {
+    if (!key) {
+        return '';
+    }
     return key.exportKey('private');
 }
 
 export function publicKeyToString(key) {
+    if (!key) {
+        return '';
+    }
     return key.exportKey('public');
+}
+
+export function keyFromString(keyString) {
+    return new NodeRSA(keyString);
 }
 
 // generates ECIES private, public key pair and executes with callback
 export function generateKeyPair() {
-    return new NodeRSA({b: RSA_KEY_SIZE});
+    const key = new NodeRSA({b: RSA_KEY_SIZE});
+    return key.generateKeyPair();
 }
 
 // generates and stores private and public keys
 export async function generateAndStoreKeyPair() {
     const key = generateKeyPair();
+    if (!key) {
+        return 'error';
+    }
     return storeKeyPair(key);
 }
 
@@ -31,6 +45,9 @@ export async function storeKeyPair(key) {
 
 // only store private key (buffer)
 export function storePrivateKey(key) {
+    if (!key) {
+        return;
+    }
     localStorage.setItem(LOCAL_STORAGE_KEY, privateKeyToString(key));
 }
 
@@ -38,7 +55,7 @@ export function storePrivateKey(key) {
 export function loadKey() {
     const keyData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (keyData) {
-        return new NodeRSA(keyData);
+        return keyFromString(keyData);
     }
 
     return null;
