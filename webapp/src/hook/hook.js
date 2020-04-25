@@ -79,15 +79,12 @@ export default class Hooks {
         // eslint-disable-next-line no-console
         console.log(encrypted);
 
-        const result = await Promise.all(encrypted.map((messageData) => {
-            const {message} = messageData;
-            // eslint-disable-next-line no-console
-            return Client4.createPost({
-                channel_id: args.channel_id,
-                message,
-                props: {public_key: messageData.public_key},
-            });
-        }));
+        const message = Buffer.from(JSON.stringify(encrypted)).toString('base64');
+        const result = await Client4.createPost({
+            channel_id: args.channel_id,
+            message,
+            props: {encrypted: true},
+        });
 
         // eslint-disable-next-line no-console
         console.log(result);
@@ -131,10 +128,8 @@ export default class Hooks {
 
         // eslint-disable-next-line no-console
         console.log(message);
-        // eslint-disable-next-line no-console
-        console.log(props);
 
-        if (!props.public_key) {
+        if (!props || !props.encrypted) {
             return message;
         }
 
@@ -142,16 +137,21 @@ export default class Hooks {
         // eslint-disable-next-line no-console
         console.log(key);
 
-        if (props.public_key !== publicKeyToString(key)) {
+        const messageObject = Array.from(JSON.parse(Buffer.from(message, 'base64').toString()));
+        // eslint-disable-next-line no-console
+        console.log(messageObject);
+
+        const myMessages = messageObject.filter((value) => {
+            // eslint-disable-next-line no-console
+            console.log(publicKeyToString(key));
+            // eslint-disable-next-line no-console
+            console.log(value.public_key);
+            return (value.public_key === publicKeyToString(key));
+        });
+        if (myMessages.length === 0) {
             return '';
         }
 
-        const res = decrypt(key, Buffer.from(message, 'base64'));
-        // eslint-disable-next-line no-console
-        console.log('jjj');
-        // eslint-disable-next-line no-console
-        console.log(res);
-
-        return res;
+        return decrypt(key, Buffer.from(myMessages[0].message, 'base64'));
     }
 }
