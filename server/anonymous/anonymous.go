@@ -3,6 +3,8 @@ package anonymous
 import (
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
+	utils_store "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
+
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/pkg/errors"
 )
@@ -34,6 +36,7 @@ type Config struct {
 type PluginAPI interface {
 	SendEphemeralPost(userID string, post *model.Post) *model.Post
 	GetActivePlugins() ([]PluginIdentifier, error)
+	utils_store.API
 }
 
 type anonymous struct {
