@@ -49,6 +49,8 @@ func (m *MockPlugin) GetActivePlugins() ([]anonymous.PluginIdentifier, error) {
 func (mr *MockPluginMockRecorder) GetActivePlugins() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActivePlugins", reflect.TypeOf((*MockPlugin)(nil).GetActivePlugins))
+}
+
 // KVDelete mocks base method
 func (m *MockPlugin) KVDelete(arg0 string) *model.AppError {
 	m.ctrl.T.Helper()
