@@ -17,6 +17,10 @@ export default class Hooks {
         let publicKey;
         let response;
         let pubKeyString;
+        if (commands.length === 0) {
+            return Promise.resolve({message: '/anonymous keypair', args});
+        }
+
         switch (commands[0]) {
         case '--generate':
             response = await generateAndStoreKeyPair();
@@ -50,7 +54,7 @@ export default class Hooks {
         default:
             break;
         }
-        return Promise.resolve({});
+        return Promise.resolve({message: '/anonymous keypair' + commands[0], args});
     };
 
     slashCommandWillBePostedHook = (message, contextArgs) => {
@@ -60,7 +64,7 @@ export default class Hooks {
             return Promise.resolve({});
         }
         if (commands.length < 2) {
-            return Promise.resolve({error: {message: "Command isn't specified"}});
+            return Promise.resolve({message, args: contextArgs});
         }
 
         switch (commands[1]) {

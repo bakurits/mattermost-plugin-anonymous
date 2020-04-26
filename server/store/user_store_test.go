@@ -2,8 +2,8 @@ package store_test
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/mattermost/mattermost-server/v5/model"
 	"strings"
 	"testing"
 
@@ -38,14 +38,14 @@ func Test_pluginStore_DeleteUser(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	m := mockStore.NewMockKVStore(ctrl)
-	m.EXPECT().Delete(stringLikeMatcher("key_in")).Return(nil)
-	m.EXPECT().Delete(gomock.Not(stringLikeMatcher("key_in"))).Return(errors.New("no data"))
+	m := mockStore.NewMockStoreAPI(ctrl)
+	m.EXPECT().KVDelete(stringLikeMatcher("key_in")).Return(nil)
+	m.EXPECT().KVDelete(gomock.Not(stringLikeMatcher("key_in"))).Return(&model.AppError{Message: "no data"})
 
 	defer ctrl.Finish()
 
 	type fields struct {
-		userStore utilsStore.KVStore
+		storeAPI utilsStore.API
 	}
 	type args struct {
 		mattermostUserID string
@@ -59,7 +59,7 @@ func Test_pluginStore_DeleteUser(t *testing.T) {
 		{
 			name: "key present test",
 			fields: fields{
-				userStore: m,
+				storeAPI: m,
 			},
 			args: args{
 				mattermostUserID: "key_in",
@@ -69,7 +69,7 @@ func Test_pluginStore_DeleteUser(t *testing.T) {
 		{
 			name: "key not present test",
 			fields: fields{
-				userStore: m,
+				storeAPI: m,
 			},
 			args: args{
 				mattermostUserID: "key_not_in",
@@ -79,7 +79,7 @@ func Test_pluginStore_DeleteUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := store.NewWithStores(tt.fields.userStore)
+			s := store.NewPluginStore(tt.fields.storeAPI)
 
 			err := s.DeleteUser(tt.args.mattermostUserID)
 			test.CheckErr(tassert, tt.wantErr, err)
@@ -91,18 +91,18 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	m := mockStore.NewMockKVStore(ctrl)
+	m := mockStore.NewMockStoreAPI(ctrl)
 	dt, _ := json.Marshal(store.User{
 		MattermostUserID: "key_in",
 		PublicKey:        []byte{1},
 	})
-	m.EXPECT().Load(stringLikeMatcher("key_in")).Return(dt, nil)
-	m.EXPECT().Load(stringLikeMatcher("json_error")).Return([]byte{1}, nil)
-	m.EXPECT().Load(stringLikeMatcher("no_data")).Return(nil, errors.New("no data"))
+	m.EXPECT().KVGet(stringLikeMatcher("key_in")).Return(dt, nil)
+	m.EXPECT().KVGet(stringLikeMatcher("json_error")).Return([]byte{1}, nil)
+	m.EXPECT().KVGet(stringLikeMatcher("no_data")).Return(nil, &model.AppError{Message: "no data"})
 	defer ctrl.Finish()
 
 	type fields struct {
-		userStore utilsStore.KVStore
+		storeAPI utilsStore.API
 	}
 	type args struct {
 		mattermostUserID string
@@ -117,7 +117,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 		{
 			name: "key present test",
 			fields: fields{
-				userStore: m,
+				storeAPI: m,
 			},
 			args: args{
 				mattermostUserID: "key_in",
@@ -131,7 +131,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 		{
 			name: "json error",
 			fields: fields{
-				userStore: m,
+				storeAPI: m,
 			},
 			args: args{
 				mattermostUserID: "json_error",
@@ -142,7 +142,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 		{
 			name: "no data test",
 			fields: fields{
-				userStore: m,
+				storeAPI: m,
 			},
 			args: args{
 				mattermostUserID: "no_data",
@@ -153,7 +153,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := store.NewWithStores(tt.fields.userStore)
+			s := store.NewPluginStore(tt.fields.storeAPI)
 
 			got, err := s.LoadUser(tt.args.mattermostUserID)
 			test.CheckErr(tassert, tt.wantErr, err)
@@ -167,15 +167,15 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	m := mockStore.NewMockKVStore(ctrl)
+	m := mockStore.NewMockStoreAPI(ctrl)
 
-	m.EXPECT().Store(stringLikeMatcher("user_1"), gomock.Any()).Return(nil)
-	m.EXPECT().Store(stringLikeMatcher("cant_store"), gomock.Any()).Return(errors.New("failed plugin KVSet"))
+	m.EXPECT().KVSet(stringLikeMatcher("user_1"), gomock.Any()).Return(nil)
+	m.EXPECT().KVSet(stringLikeMatcher("cant_store"), gomock.Any()).Return(&model.AppError{Message: "failed plugin KVSet"})
 
 	defer ctrl.Finish()
 
 	type fields struct {
-		userStore utilsStore.KVStore
+		storeAPI utilsStore.API
 	}
 	type args struct {
 		user *store.User
@@ -189,7 +189,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 		{
 			name: "basic test",
 			fields: fields{
-				userStore: m,
+				storeAPI: m,
 			},
 			args: args{
 				user: &store.User{
@@ -202,7 +202,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 		{
 			name: "storing empty data",
 			fields: fields{
-				userStore: m,
+				storeAPI: m,
 			},
 			args:    args{user: nil},
 			wantErr: true,
@@ -210,7 +210,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 		{
 			name: "storing bad data",
 			fields: fields{
-				userStore: m,
+				storeAPI: m,
 			},
 			args: args{
 				user: &store.User{
@@ -223,7 +223,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := store.NewWithStores(tt.fields.userStore)
+			s := store.NewPluginStore(tt.fields.storeAPI)
 
 			err := s.StoreUser(tt.args.user)
 			test.CheckErr(tassert, tt.wantErr, err)
