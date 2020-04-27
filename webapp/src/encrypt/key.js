@@ -1,4 +1,4 @@
-import {loadKey} from './key_manager'
+import {loadKey} from './key_manager';
 
 export class Key {
     /**
@@ -15,17 +15,22 @@ export class Key {
      * @returns base64 string of public key
      */
     get PublicKey() {
-        if (this.publicKey == null)
+        if (this.publicKey != null) {
+            return this.publicKey.exportKey('public');
+        }
+        if (this.privateKey != null) {
             return this.privateKey.exportKey('public');
-        return this.publicKey.exportKey('public');
+        }
+        return null;
     }
 
     /**
      * @returns base64 string of private key
      */
     get PrivateKey() {
-        if (this.privateKey == null)
+        if (this.privateKey == null) {
             return '';
+        }
         return this.privateKey.exportKey('private');
     }
 

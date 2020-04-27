@@ -57,6 +57,6 @@ export function loadKey() {
     if (keyData) {
         return keyFromString(keyData);
     }
-    
+
     return null;
 }

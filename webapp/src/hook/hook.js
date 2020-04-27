@@ -5,7 +5,8 @@ import {
     keyFromString,
     storePrivateKey,
     publicKeyToString,
-    privateKeyToString
+    privateKeyToString,
+    loadKey,
 } from '../encrypt/key_manager';
 import {sendEphemeralPost} from '../actions/actions';
 import Client from '../api_client';
@@ -75,6 +76,7 @@ export default class Hooks {
         }));
 
         const message = Buffer.from(JSON.stringify(encrypted)).toString('base64');
+        // eslint-disable-next-line no-unused-vars
         const result = await Client4.createPost({
             channel_id: args.channel_id,
             message,
@@ -112,7 +114,6 @@ export default class Hooks {
 
         // here is public key if needed
         const {props} = post;
-
 
         if (!props || !props.encrypted) {
             return message;

@@ -3,7 +3,7 @@ import 'mattermost-webapp/tests/setup';
 import {newFromPrivateKey, newFromPublicKey, loadFromLocalStorage} from '../src/encrypt/key';
 
 import {
-    generateKeyPair, loadKey, publicKeyToString,
+    generateKeyPair,
     storePrivateKey,
 } from '../src/encrypt/key_manager';
 
