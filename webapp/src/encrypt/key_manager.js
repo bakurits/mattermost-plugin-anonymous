@@ -1,7 +1,7 @@
 import Client from '../api_client';
 
 const NodeRSA = require('node-rsa');
-const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
+export const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
 const RSA_KEY_SIZE = 512;
 
 export function privateKeyToString(key) {
@@ -57,6 +57,6 @@ export function loadKey() {
     if (keyData) {
         return keyFromString(keyData);
     }
-
+    
     return null;
 }

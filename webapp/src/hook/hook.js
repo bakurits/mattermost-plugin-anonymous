@@ -2,12 +2,14 @@ import {Client4} from 'mattermost-redux/client';
 
 import {
     generateAndStoreKeyPair,
-    keyFromString, loadKey, publicKeyToString, privateKeyToString,
+    keyFromString,
     storePrivateKey,
+    publicKeyToString,
+    privateKeyToString
 } from '../encrypt/key_manager';
 import {sendEphemeralPost} from '../actions/actions';
 import Client from '../api_client';
-import {decrypt, encrypt} from '../encrypt/encrypt';
+import {newFromPublicKey, loadFromLocalStorage} from '../encrypt/key';
 
 export default class Hooks {
     constructor(store, settings) {
@@ -55,29 +57,22 @@ export default class Hooks {
 
     handlePost = async (commands, args) => {
         const users = await Client4.getProfilesInChannel(args.channel_id);
-        // eslint-disable-next-line no-console
-        console.log(users);
 
         const publicKeys = await Promise.all(users.map((user) => {
             return Client.retrievePublicKey(user.id).then((data) => {
                 return Buffer.from(data.public_key, 'base64').toString();
             });
         }));
-        // eslint-disable-next-line no-console
-        console.log(publicKeys);
 
         const encrypted = await Promise.all(publicKeys.map((keyString) => {
             const key = keyFromString(keyString);
-            // eslint-disable-next-line no-console
-            console.log(publicKeyToString(key));
-            const message = encrypt(key, commands[0]).toString('base64');
+            const encrypter = newFromPublicKey(key);
+            const message = encrypter.encrypt(commands[0]).toString('base64');
             return {
                 message,
                 public_key: keyString,
             };
         }));
-        // eslint-disable-next-line no-console
-        console.log(encrypted);
 
         const message = Buffer.from(JSON.stringify(encrypted)).toString('base64');
         const result = await Client4.createPost({
@@ -86,13 +81,6 @@ export default class Hooks {
             props: {encrypted: true},
         });
 
-        // eslint-disable-next-line no-console
-        console.log(result);
-
-        // eslint-disable-next-line no-console
-        //this.store.dispatch(sendPost('Your private key:\n', args.channel_id));
-
-        //await Client.sendPost(args.channel_id, commands[0], getPublicKeyFromPrivateKey(getPrivateKey()));
         return Promise.resolve({});
     };
 
@@ -123,35 +111,24 @@ export default class Hooks {
         const {message} = post;
 
         // here is public key if needed
-        // eslint-disable-next-line no-unused-vars
         const {props} = post;
 
-        // eslint-disable-next-line no-console
-        console.log(message);
 
         if (!props || !props.encrypted) {
             return message;
         }
 
-        const key = loadKey();
-        // eslint-disable-next-line no-console
-        console.log(key);
+        const decrypter = loadFromLocalStorage();
 
         const messageObject = Array.from(JSON.parse(Buffer.from(message, 'base64').toString()));
-        // eslint-disable-next-line no-console
-        console.log(messageObject);
 
         const myMessages = messageObject.filter((value) => {
-            // eslint-disable-next-line no-console
-            console.log(publicKeyToString(key));
-            // eslint-disable-next-line no-console
-            console.log(value.public_key);
-            return (value.public_key === publicKeyToString(key));
+            return (value.public_key === decrypter.PublicKey);
         });
         if (myMessages.length === 0) {
             return '';
         }
 
-        return decrypt(key, Buffer.from(myMessages[0].message, 'base64'));
+        return decrypter.decrypt(Buffer.from(myMessages[0].message, 'base64'));
     }
 }
