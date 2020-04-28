@@ -30,6 +30,8 @@ type handler struct {
 	an anonymous.Anonymous
 }
 
+type handlerWithUserID func(w http.ResponseWriter, r *http.Request, userID string)
+
 // NewHTTPHandler initializes the router.
 func NewHTTPHandler(an anonymous.Anonymous) http.Handler {
 	return newHandler(an)
@@ -41,8 +43,8 @@ func newHandler(an anonymous.Anonymous) *handler {
 		an:     an,
 	}
 	apiRouter := h.Router.PathPrefix(config.PathAPI).Subrouter()
-	apiRouter.HandleFunc("/pub_key", h.handleGetPublicKey()).Methods("GET")
-	apiRouter.HandleFunc("/pub_key", h.handleSetPublicKey()).Methods("POST")
+	apiRouter.HandleFunc("/pub_key", h.extractUserIDMiddleware(h.handleGetPublicKey())).Methods("GET")
+	apiRouter.HandleFunc("/pub_key", h.extractUserIDMiddleware(h.handleSetPublicKey())).Methods("POST")
 	return h
 }
 
@@ -65,9 +67,19 @@ func (h *handler) respondWithSuccess(w http.ResponseWriter) {
 	}{Status: "OK"})
 }
 
-// handleGetPublicKey handle get public key request
-func (h *handler) handleGetPublicKey() http.HandlerFunc {
+func (h *handler) extractUserIDMiddleware(handler handlerWithUserID) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		mattermostUserID := r.Header.Get("Mattermost-User-ID")
+		if mattermostUserID == "" {
+			h.jsonError(w, Error{Message: "Not Authorized", StatusCode: http.StatusUnauthorized})
+			return
+		}
+		handler(w, r, mattermostUserID)
+	}
+}
 
+// handleGetPublicKey handle get public key request
+func (h *handler) handleGetPublicKey() handlerWithUserID {
 	type request struct {
 		UserID string `schema:"user_id"`
 	}
@@ -75,7 +87,7 @@ func (h *handler) handleGetPublicKey() http.HandlerFunc {
 		PublicKey string `json:"public_key"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request, _ string) {
 		var req request
 		err := schema.NewDecoder().Decode(&req, r.URL.Query())
 		if err != nil || req.UserID == "" {
@@ -94,14 +106,12 @@ func (h *handler) handleGetPublicKey() http.HandlerFunc {
 }
 
 // handleSetPublicKey - handle set public key request
-func (h *handler) handleSetPublicKey() http.HandlerFunc {
-
+func (h *handler) handleSetPublicKey() handlerWithUserID {
 	type request struct {
 		PublicKey string `json:"public_key"`
 	}
 
-	return func(w http.ResponseWriter, r *http.Request) {
-		mattermostUserID := r.Header.Get("Mattermost-User-ID")
+	return func(w http.ResponseWriter, r *http.Request, mattermostUserID string) {
 		var req request
 		err := json.NewDecoder(r.Body).Decode(&req)
 		if err != nil {
