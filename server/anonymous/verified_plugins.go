@@ -74,6 +74,11 @@ func (a *anonymous) initializeValidatedPackages() {
 		unverifiedPluginsList: []PluginIdentifier{},
 		unverifiedPluginsLock: &sync.RWMutex{},
 
-		verifiedPlugins: map[PluginIdentifier]bool{},
+		verifiedPlugins: map[PluginIdentifier]bool{
+			PluginIdentifier{
+				ID:      a.GetConfiguration().PluginID,
+				Version: a.GetConfiguration().PluginVersion,
+			}: true,
+		},
 	}
 }

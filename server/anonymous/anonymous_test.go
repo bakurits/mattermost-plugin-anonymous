@@ -3,6 +3,7 @@ package anonymous_test
 import (
 	"errors"
 	"fmt"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"strings"
 	"testing"
 
@@ -68,6 +69,11 @@ func Test_anonymous_GetPublicKey(t *testing.T) {
 	storeMock.EXPECT().LoadUser(gomock.Not(stringLikeMatcher("user_in"))).Return(nil, errors.New("some error"))
 
 	pluginMock := mockPlugin.NewMockPlugin(ctrl)
+	pluginMock.EXPECT().GetConfiguration().Return(&config.Config{
+		PluginID:      "",
+		PluginVersion: "",
+	}).AnyTimes()
+
 	defer ctrl.Finish()
 
 	type fields struct {
@@ -133,6 +139,11 @@ func Test_anonymous_StorePublicKey(t *testing.T) {
 	storeMock.EXPECT().StoreUser(gomock.Not(userIDMatcher("user_not_in"))).Return(nil)
 
 	pluginMock := mockPlugin.NewMockPlugin(ctrl)
+	pluginMock.EXPECT().GetConfiguration().Return(&config.Config{
+		PluginID:      "",
+		PluginVersion: "",
+	}).AnyTimes()
+
 	defer ctrl.Finish()
 
 	type fields struct {

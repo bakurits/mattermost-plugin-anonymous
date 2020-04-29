@@ -6,6 +6,7 @@ package mock
 
 import (
 	anonymous "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
+	config "github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	crypto "github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	store "github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	gomock "github.com/golang/mock/gomock"
@@ -63,6 +64,20 @@ func (m *MockAnonymous) GetActivePlugins() ([]anonymous.PluginIdentifier, error)
 func (mr *MockAnonymousMockRecorder) GetActivePlugins() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActivePlugins", reflect.TypeOf((*MockAnonymous)(nil).GetActivePlugins))
+}
+
+// GetConfiguration mocks base method
+func (m *MockAnonymous) GetConfiguration() *config.Config {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetConfiguration")
+	ret0, _ := ret[0].(*config.Config)
+	return ret0
+}
+
+// GetConfiguration indicates an expected call of GetConfiguration
+func (mr *MockAnonymousMockRecorder) GetConfiguration() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfiguration", reflect.TypeOf((*MockAnonymous)(nil).GetConfiguration))
 }
 
 // GetPublicKey mocks base method
