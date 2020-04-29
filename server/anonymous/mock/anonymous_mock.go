@@ -168,9 +168,11 @@ func (mr *MockAnonymousMockRecorder) SendEphemeralPost(arg0, arg1 interface{}) *
 }
 
 // StartPluginChecks mocks base method
-func (m *MockAnonymous) StartPluginChecks() {
+func (m *MockAnonymous) StartPluginChecks() error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "StartPluginChecks")
+	ret := m.ctrl.Call(m, "StartPluginChecks")
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // StartPluginChecks indicates an expected call of StartPluginChecks

@@ -19,7 +19,7 @@ type Anonymous interface {
 	GetPublicKey(userID string) (crypto.PublicKey, error)
 
 	UnverifiedPlugins() []PluginIdentifier
-	StartPluginChecks()
+	StartPluginChecks() error
 }
 
 // Dependencies contains all API dependencies

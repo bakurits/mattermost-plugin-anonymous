@@ -7,6 +7,7 @@ import (
 
 	"github.com/mattermost/mattermost-server/v5/mlog"
 	"github.com/pkg/errors"
+	"github.com/robfig/cron/v3"
 )
 
 // PluginIdentifier unique plugin identifier
@@ -33,22 +34,28 @@ func (a *anonymous) UnverifiedPlugins() []PluginIdentifier {
 }
 
 // StartPluginChecks starts checking unverified plugins
-func (a *anonymous) StartPluginChecks() {
-	go func() {
-		for now := range time.Tick(time.Hour) {
-			mlog.Info(fmt.Sprintf("started updating validated plugins %s", now.String()))
+func (a *anonymous) StartPluginChecks() error {
+	c := cron.New()
+	_, err := c.AddFunc("@hourly", func() {
+		mlog.Info(fmt.Sprintf("started updating validated plugins %s", time.Now()))
 
-			plugins, err := a.checkPluginsVerificationStatus()
-			if err != nil {
-				mlog.Error(err.Error())
-				return
-			}
-
-			a.pluginVerificationTracker.unverifiedPluginsLock.Lock()
-			a.pluginVerificationTracker.unverifiedPluginsList = plugins
-			a.pluginVerificationTracker.unverifiedPluginsLock.Unlock()
+		plugins, err := a.checkPluginsVerificationStatus()
+		if err != nil {
+			mlog.Error(err.Error())
+			return
 		}
-	}()
+
+		a.pluginVerificationTracker.unverifiedPluginsLock.Lock()
+		a.pluginVerificationTracker.unverifiedPluginsList = plugins
+		a.pluginVerificationTracker.unverifiedPluginsLock.Unlock()
+	})
+	if err != nil {
+		return errors.Wrap(err, "Error while starting plugin verification checker")
+	}
+
+	c.Start()
+
+	return nil
 }
 
 func (a *anonymous) checkPluginsVerificationStatus() ([]PluginIdentifier, error) {
