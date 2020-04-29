@@ -82,7 +82,7 @@ func (a *anonymous) initializeValidatedPackages() {
 		unverifiedPluginsLock: &sync.RWMutex{},
 
 		verifiedPlugins: map[PluginIdentifier]bool{
-			PluginIdentifier{
+			{
 				ID:      a.GetConfiguration().PluginID,
 				Version: a.GetConfiguration().PluginVersion,
 			}: true,
