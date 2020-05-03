@@ -10,7 +10,7 @@ array=(
     command:Handler
     plugin:Plugin
     store:Store
-    utils/store:KVStore
+    utils/store:API
 )
 
 # Iterate over each item in array and generate mock

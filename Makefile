@@ -24,7 +24,7 @@ ifneq ($(wildcard build/custom.mk),)
 endif
 
 ## Checks the code style, tests, builds and bundles the plugin.
-all: check-style test dist mock
+all: mock check-style test dist
 
 ## Generating mock files with shell script
 mock:
