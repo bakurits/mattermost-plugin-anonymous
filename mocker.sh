@@ -13,7 +13,8 @@ for i in "${array[@]}"; do IFS=",";
 
     DESTINATION=${1}
     INTERFACE=${2}
-    
+    MOCK_FILE=$(echo ${INTERFACE} | awk '{print tolower($0)}')_mock.go
+
     # Test echoing
-    echo "${DESTINATION} ${INTERFACE}"
+    echo "${DESTINATION} ${INTERFACE} ${MOCK_FILE}"
 done
