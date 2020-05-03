@@ -38,7 +38,8 @@ func Test_pluginStore_DeleteUser(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	m := mockStore.NewMockStoreAPI(ctrl)
+	m := mockStore.NewMockAPI(ctrl)
+
 	m.EXPECT().KVDelete(stringLikeMatcher("key_in")).Return(nil)
 	m.EXPECT().KVDelete(gomock.Not(stringLikeMatcher("key_in"))).Return(&model.AppError{Message: "no data"})
 
@@ -91,7 +92,7 @@ func Test_pluginStore_LoadUser(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	m := mockStore.NewMockStoreAPI(ctrl)
+	m := mockStore.NewMockAPI(ctrl)
 	dt, _ := json.Marshal(store.User{
 		MattermostUserID: "key_in",
 		PublicKey:        []byte{1},
@@ -167,7 +168,7 @@ func Test_pluginStore_StoreUser(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
-	m := mockStore.NewMockStoreAPI(ctrl)
+	m := mockStore.NewMockAPI(ctrl)
 
 	m.EXPECT().KVSet(stringLikeMatcher("user_1"), gomock.Any()).Return(nil)
 	m.EXPECT().KVSet(stringLikeMatcher("cant_store"), gomock.Any()).Return(&model.AppError{Message: "failed plugin KVSet"})
