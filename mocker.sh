@@ -4,17 +4,17 @@
 GH_REPO=github.com/bakurits/mattermost-plugin-anonymous
 
 # Array of (package,interface) tuples
-# If new element needs to be added, please delimit package and interface by comma like other elements
+# If new element needs to be added, please delimit package and interface by colon like other elements
 array=(
-    anonymous,Anonymous
-    command,Handler
-    plugin,Plugin
-    store,Store
-    utils/store,KVStore
+    anonymous:Anonymous
+    command:Handler
+    plugin:Plugin
+    store:Store
+    utils/store:KVStore
 )
 
 # Iterate over each item in array and generate mock
-for i in "${array[@]}"; do IFS=",";
+for i in "${array[@]}"; do IFS=":";
     set -- ${i};
 
     PACKAGE=server/${1}
