@@ -36,7 +36,7 @@ export class Key {
 
     /**
      *
-     * @param {string} data message text
+     * @param {Buffer} data message text
      * @returns {string | null} returns encrypted text or null if public key isn't present
      */
     encrypt(data) {
@@ -49,7 +49,7 @@ export class Key {
 
     /**
      *
-     * @param {string} data encrypted text
+     * @param {Buffer} data encrypted text
      */
     decrypt(data) {
         if (this.privateKey == null) {

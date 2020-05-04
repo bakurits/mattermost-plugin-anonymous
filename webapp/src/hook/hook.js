@@ -80,8 +80,7 @@ export default class Hooks {
         }));
 
         const message = Buffer.from(JSON.stringify(encrypted)).toString('base64');
-        // eslint-disable-next-line no-unused-vars
-        const result = await Client4.createPost({
+        await Client4.createPost({
             channel_id: args.channel_id,
             message,
             props: {encrypted: true},
@@ -116,7 +115,6 @@ export default class Hooks {
         // message text in database
         const {message} = post;
 
-        // here is public key if needed
         const {props} = post;
 
         if (!props || !props.encrypted) {
