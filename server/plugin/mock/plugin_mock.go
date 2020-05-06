@@ -5,6 +5,8 @@
 package mock
 
 import (
+	anonymous "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
+	config "github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	gomock "github.com/golang/mock/gomock"
 	model "github.com/mattermost/mattermost-server/v5/model"
 	plugin "github.com/mattermost/mattermost-server/v5/plugin"
@@ -33,6 +35,35 @@ func NewMockPlugin(ctrl *gomock.Controller) *MockPlugin {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockPlugin) EXPECT() *MockPluginMockRecorder {
 	return m.recorder
+}
+
+// GetActivePlugins mocks base method
+func (m *MockPlugin) GetActivePlugins() ([]anonymous.PluginIdentifier, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetActivePlugins")
+	ret0, _ := ret[0].([]anonymous.PluginIdentifier)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetActivePlugins indicates an expected call of GetActivePlugins
+func (mr *MockPluginMockRecorder) GetActivePlugins() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActivePlugins", reflect.TypeOf((*MockPlugin)(nil).GetActivePlugins))
+}
+
+// GetConfiguration mocks base method
+func (m *MockPlugin) GetConfiguration() *config.Config {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetConfiguration")
+	ret0, _ := ret[0].(*config.Config)
+	return ret0
+}
+
+// GetConfiguration indicates an expected call of GetConfiguration
+func (mr *MockPluginMockRecorder) GetConfiguration() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfiguration", reflect.TypeOf((*MockPlugin)(nil).GetConfiguration))
 }
 
 // KVDelete mocks base method

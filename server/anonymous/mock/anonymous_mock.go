@@ -5,6 +5,8 @@
 package mock
 
 import (
+	anonymous "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
+	config "github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	crypto "github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	store "github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	gomock "github.com/golang/mock/gomock"
@@ -47,6 +49,35 @@ func (m *MockAnonymous) DeleteUser(arg0 string) error {
 func (mr *MockAnonymousMockRecorder) DeleteUser(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockAnonymous)(nil).DeleteUser), arg0)
+}
+
+// GetActivePlugins mocks base method
+func (m *MockAnonymous) GetActivePlugins() ([]anonymous.PluginIdentifier, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetActivePlugins")
+	ret0, _ := ret[0].([]anonymous.PluginIdentifier)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetActivePlugins indicates an expected call of GetActivePlugins
+func (mr *MockAnonymousMockRecorder) GetActivePlugins() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetActivePlugins", reflect.TypeOf((*MockAnonymous)(nil).GetActivePlugins))
+}
+
+// GetConfiguration mocks base method
+func (m *MockAnonymous) GetConfiguration() *config.Config {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetConfiguration")
+	ret0, _ := ret[0].(*config.Config)
+	return ret0
+}
+
+// GetConfiguration indicates an expected call of GetConfiguration
+func (mr *MockAnonymousMockRecorder) GetConfiguration() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfiguration", reflect.TypeOf((*MockAnonymous)(nil).GetConfiguration))
 }
 
 // GetPublicKey mocks base method
@@ -136,6 +167,20 @@ func (mr *MockAnonymousMockRecorder) SendEphemeralPost(arg0, arg1 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendEphemeralPost", reflect.TypeOf((*MockAnonymous)(nil).SendEphemeralPost), arg0, arg1)
 }
 
+// StartPluginChecks mocks base method
+func (m *MockAnonymous) StartPluginChecks() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StartPluginChecks")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StartPluginChecks indicates an expected call of StartPluginChecks
+func (mr *MockAnonymousMockRecorder) StartPluginChecks() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartPluginChecks", reflect.TypeOf((*MockAnonymous)(nil).StartPluginChecks))
+}
+
 // StorePublicKey mocks base method
 func (m *MockAnonymous) StorePublicKey(arg0 string, arg1 crypto.PublicKey) error {
 	m.ctrl.T.Helper()
@@ -162,4 +207,18 @@ func (m *MockAnonymous) StoreUser(arg0 *store.User) error {
 func (mr *MockAnonymousMockRecorder) StoreUser(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreUser", reflect.TypeOf((*MockAnonymous)(nil).StoreUser), arg0)
+}
+
+// UnverifiedPlugins mocks base method
+func (m *MockAnonymous) UnverifiedPlugins() []anonymous.PluginIdentifier {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UnverifiedPlugins")
+	ret0, _ := ret[0].([]anonymous.PluginIdentifier)
+	return ret0
+}
+
+// UnverifiedPlugins indicates an expected call of UnverifiedPlugins
+func (mr *MockAnonymousMockRecorder) UnverifiedPlugins() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnverifiedPlugins", reflect.TypeOf((*MockAnonymous)(nil).UnverifiedPlugins))
 }
