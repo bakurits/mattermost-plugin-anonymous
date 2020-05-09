@@ -1,4 +1,4 @@
-# Anonymous Plugin [![CircleCI branch](https://img.shields.io/circleci/project/github/bakurits/mattermost-plugin-anonymous/key-pair-generation.svg)](https://circleci.com/gh/bakurits/mattermost-plugin-anonymous) [![codecov](https://codecov.io/gh/bakurits/mattermost-plugin-anonymous/branch/key-pair-generation/graph/badge.svg)](https://codecov.io/gh/bakurits/mattermost-plugin-anonymous)
+# Anonymous Plugin [![CircleCI branch](https://img.shields.io/circleci/project/github/bakurits/mattermost-plugin-anonymous/master.svg)](https://circleci.com/gh/bakurits/mattermost-plugin-anonymous) [![codecov](https://codecov.io/gh/bakurits/mattermost-plugin-anonymous/branch/master/graph/badge.svg)](https://codecov.io/gh/bakurits/mattermost-plugin-anonymous)
 **Maintainer:** [@dbejanishvili](https://github.com/dbejanishvili)
 **Co-Maintainers:** [@bakurits](https://github.com/bakurits) [@Gvantsats](https://github.com/Gvantsats)
 
