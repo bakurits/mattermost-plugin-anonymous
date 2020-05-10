@@ -24,15 +24,17 @@ test('should be decrypted same', () => {
 
 test('storing key in local storage', () => {
     const key1 = generateKeyPair();
-    storePrivateKey(key1);
-    const s1 = newFromPrivateKey(key1).PrivateKey;
+    var privateKey = newFromPrivateKey(key1);
+    storePrivateKey(privateKey);
+    const s1 = privateKey.PrivateKey;
     const s2 = loadFromLocalStorage().PrivateKey;
     expect(s1).toStrictEqual(s2);
 });
 
 test('should be decrypted same with stored keys', () => {
     const key = generateKeyPair();
-    storePrivateKey(key);
+    var privateKey = newFromPrivateKey(key);
+    storePrivateKey(privateKey);
 
     const keyPublic = newFromPublicKey(key);
     const keyLocalStorage = loadFromLocalStorage();

@@ -4,13 +4,11 @@ import {
     generateAndStoreKeyPair,
     keyFromString,
     storePrivateKey,
-    publicKeyToString,
-    privateKeyToString,
     loadKey,
 } from '../encrypt/key_manager';
 import {sendEphemeralPost} from '../actions/actions';
 import Client from '../api_client';
-import {newFromPublicKey, loadFromLocalStorage} from '../encrypt/key';
+import {newFromPublicKey, loadFromLocalStorage, newFromPrivateKey} from '../encrypt/key';
 
 export default class Hooks {
     constructor(store, settings) {
@@ -21,6 +19,8 @@ export default class Hooks {
     handleKeyPair = async (commands, args) => {
         let key;
         let response;
+        let privateKey;
+        let privateKeyString;
         if (commands.length === 0) {
             return Promise.resolve({message: '/anonymous keypair', args});
         }
@@ -42,17 +42,20 @@ export default class Hooks {
                 return Promise.resolve({error: {message: 'Too many arguments'}});
             }
 
-            key = keyFromString(commands[1]);
+            privateKeyString = commands[1];
+            key = keyFromString(privateKeyString);
             if (!key) {
                 return Promise.resolve({error: {message: 'Invalid private key'}});
             }
 
-            storePrivateKey(key);
-            return Promise.resolve({message: '/anonymous keypair --overwrite ' + publicKeyToString(key), args});
+            privateKey = newFromPrivateKey(key);
+            storePrivateKey(privateKey);
+            return Promise.resolve({message: '/anonymous keypair --overwrite ' + privateKey.PublicKey, args});
 
         case '--export':
             key = loadKey();
-            this.store.dispatch(sendEphemeralPost('Your private key:\n' + privateKeyToString(key), args.channel_id));
+            privateKey = newFromPrivateKey(key);
+            this.store.dispatch(sendEphemeralPost('Your private key:\n' + privateKey.PrivateKey, args.channel_id));
             return Promise.resolve({});
         default:
             break;
@@ -72,7 +75,8 @@ export default class Hooks {
         const encrypted = await Promise.all(publicKeys.map((keyString) => {
             const key = keyFromString(keyString);
             const encrypter = newFromPublicKey(key);
-            const message = encrypter.encrypt(commands[0]).toString('base64');
+            const messageText = commands.join(' ');
+            const message = encrypter.encrypt(messageText).toString('base64');
             return {
                 message,
                 public_key: keyString,
@@ -122,6 +126,10 @@ export default class Hooks {
         }
 
         const decrypter = loadFromLocalStorage();
+
+        if (decrypter === null) {
+            return "Message couldn't be decrypted!";
+        }
 
         const messageObject = Array.from(JSON.parse(Buffer.from(message, 'base64').toString()));
 

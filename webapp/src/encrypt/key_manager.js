@@ -1,22 +1,10 @@
 import Client from '../api_client';
 
+import {newFromPublicKey, newFromPrivateKey} from './key';
+
 const NodeRSA = require('node-rsa');
 export const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
 const RSA_KEY_SIZE = 512;
-
-export function privateKeyToString(key) {
-    if (!key) {
-        return '';
-    }
-    return key.exportKey('private');
-}
-
-export function publicKeyToString(key) {
-    if (!key) {
-        return '';
-    }
-    return key.exportKey('public');
-}
 
 export function keyFromString(keyString) {
     return new NodeRSA(keyString);
@@ -39,16 +27,21 @@ export async function generateAndStoreKeyPair() {
 
 //store private key in a local storage
 export async function storeKeyPair(key) {
-    storePrivateKey(key);
-    return Client.storePublicKey(publicKeyToString(key));
+    var privateKey = newFromPrivateKey(key);
+    storePrivateKey(privateKey);
+    var publicKey = newFromPublicKey(key);
+    return Client.storePublicKey(publicKey);
 }
 
-// only store private key (buffer)
+/**
+ *
+ * @param {Key} key object of Key
+ */
 export function storePrivateKey(key) {
-    if (!key) {
+    if (key === null || key.PrivateKey === null) {
         return;
     }
-    localStorage.setItem(LOCAL_STORAGE_KEY, privateKeyToString(key));
+    localStorage.setItem(LOCAL_STORAGE_KEY, key.PrivateKey);
 }
 
 // get private key
