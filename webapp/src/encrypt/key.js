@@ -1,10 +1,10 @@
-import {loadKey} from './key_manager';
+const NodeRSA = require('node-rsa');
 
 export class Key {
     /**
      *
-     * @param {string | null} publicKey base64 string of public key or null
-     * @param {string | null} privateKey base64 string of private key or null
+     * @param {NodeRSA | null} publicKey NodeRSA object for public key
+     * @param {NodeRSA | null} privateKey NodeRSA object for public key
      */
     constructor(publicKey, privateKey) {
         this.publicKey = publicKey;
@@ -63,18 +63,38 @@ export class Key {
     }
 }
 
-export function newFromPublicKey(publicKey) {
+/**
+ * @param {string} publicKeyString NodeRSA object for public key
+ * @returns {Key | null} returns new key object generated from private key
+ */
+export function newFromPublicKey(publicKeyString) {
+    const publicKey = keyFromString(publicKeyString);
+    if (!publicKey) {
+        return null;
+    }
     return new Key(publicKey, null);
 }
 
-export function newFromPrivateKey(privateKey) {
-    return new Key(null, privateKey);
-}
-
-export function loadFromLocalStorage() {
-    const privateKey = loadKey();
+/**
+ * @param {string} privateKeyString NodeRSA object for private key
+ * @returns {Key | null} returns new key object generated from private key
+ */
+export function newFromPrivateKey(privateKeyString) {
+    const privateKey = keyFromString(privateKeyString);
     if (!privateKey) {
         return null;
     }
     return new Key(null, privateKey);
+}
+
+/**
+ * @param {string} keyString is string with key data
+ * @returns {NodeRSA | null} returns NodeRSA from key string
+ */
+function keyFromString(keyString) {
+    try {
+        return new NodeRSA(keyString);
+    } catch (e) {
+        return null;
+    }
 }

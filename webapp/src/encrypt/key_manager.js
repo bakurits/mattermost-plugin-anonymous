@@ -1,41 +1,47 @@
 import Client from '../api_client';
 
-import {newFromPublicKey, newFromPrivateKey} from './key';
+import {newFromPrivateKey, Key} from './key';
 
 const NodeRSA = require('node-rsa');
 export const LOCAL_STORAGE_KEY = 'anonymous_plugin_private_key';
 const RSA_KEY_SIZE = 512;
 
-export function keyFromString(keyString) {
-    return new NodeRSA(keyString);
-}
-
-// generates ECIES private, public key pair and executes with callback
+/**
+ * generates ECIES private, public key pair and executes with callback
+ * @returns {NodeRSA} returns newly generated NodeRSA object
+ */
 export function generateKeyPair() {
     const key = new NodeRSA({b: RSA_KEY_SIZE});
     return key.generateKeyPair();
 }
 
-// generates and stores private and public keys
+/**
+ * generates and stores private and public keys
+ * @returns {Object} returns response from api call
+ */
 export async function generateAndStoreKeyPair() {
     const key = generateKeyPair();
     if (!key) {
-        return 'error';
+        return null;
     }
     return storeKeyPair(key);
 }
 
-//store private key in a local storage
-export async function storeKeyPair(key) {
-    var privateKey = newFromPrivateKey(key);
+/**
+ * store private key in a local storage
+ * @param {NodeRSA} key is nodeRSA key object
+ * @returns {Object} returns newly generated NodeRSA object
+ */
+async function storeKeyPair(key) {
+    const privateKey = new Key(null, key);
     storePrivateKey(privateKey);
-    var publicKey = newFromPublicKey(key);
+    const publicKey = new Key(key, null);
     return Client.storePublicKey(publicKey);
 }
 
 /**
  *
- * @param {Key} key object of Key
+ * @param {Key | null} key object of Key
  */
 export function storePrivateKey(key) {
     if (key === null || key.PrivateKey === null) {
@@ -44,12 +50,19 @@ export function storePrivateKey(key) {
     localStorage.setItem(LOCAL_STORAGE_KEY, key.PrivateKey);
 }
 
-// get private key
-export function loadKey() {
+/**
+ *
+ * @returns {Key | null} returns new key object loaded from localstorage
+ * or null if localstorage is empty
+ */
+export function loadFromLocalStorage() {
     const keyData = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (keyData) {
-        return keyFromString(keyData);
+    if (!keyData) {
+        return null;
     }
-
-    return null;
+    const privateKey = newFromPrivateKey(keyData);
+    if (!privateKey) {
+        return null;
+    }
+    return privateKey;
 }

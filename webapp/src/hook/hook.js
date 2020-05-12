@@ -1,14 +1,12 @@
 import {Client4} from 'mattermost-redux/client';
 
 import {
-    generateAndStoreKeyPair,
-    keyFromString,
+    generateAndStoreKeyPair, loadFromLocalStorage,
     storePrivateKey,
-    loadKey,
 } from '../encrypt/key_manager';
 import {sendEphemeralPost} from '../actions/actions';
 import Client from '../api_client';
-import {newFromPublicKey, loadFromLocalStorage, newFromPrivateKey} from '../encrypt/key';
+import {newFromPublicKey, newFromPrivateKey} from '../encrypt/key';
 
 export default class Hooks {
     constructor(store, settings) {
@@ -28,7 +26,7 @@ export default class Hooks {
         switch (commands[0]) {
         case '--generate':
             response = await generateAndStoreKeyPair();
-            if (response.status !== 'OK') {
+            if (response && response.status !== 'OK') {
                 return Promise.resolve({error: {message: 'Error occurred while trying to store key on a server'}});
             }
             this.store.dispatch(sendEphemeralPost('Your keys were successfully generated and stored', args.channel_id));
@@ -43,18 +41,16 @@ export default class Hooks {
             }
 
             privateKeyString = commands[1];
-            key = keyFromString(privateKeyString);
+            privateKey = newFromPrivateKey(privateKeyString);
             if (!key) {
                 return Promise.resolve({error: {message: 'Invalid private key'}});
             }
 
-            privateKey = newFromPrivateKey(key);
             storePrivateKey(privateKey);
             return Promise.resolve({message: '/anonymous keypair --overwrite ' + privateKey.PublicKey, args});
 
         case '--export':
-            key = loadKey();
-            privateKey = newFromPrivateKey(key);
+            privateKey = loadFromLocalStorage();
             this.store.dispatch(sendEphemeralPost('Your private key:\n' + privateKey.PrivateKey, args.channel_id));
             return Promise.resolve({});
         default:
@@ -73,8 +69,7 @@ export default class Hooks {
         }));
 
         const encrypted = await Promise.all(publicKeys.map((keyString) => {
-            const key = keyFromString(keyString);
-            const encrypter = newFromPublicKey(key);
+            const encrypter = newFromPublicKey(keyString);
             const messageText = commands.join(' ');
             const message = encrypter.encrypt(messageText).toString('base64');
             return {

@@ -1,16 +1,16 @@
 /* eslint-disable no-magic-numbers,max-nested-callbacks */
 import 'mattermost-webapp/tests/setup';
-import {newFromPrivateKey, newFromPublicKey, loadFromLocalStorage} from '../src/encrypt/key';
+import {Key} from '../src/encrypt/key';
 
 import {
-    generateKeyPair,
+    generateKeyPair, loadFromLocalStorage,
     storePrivateKey,
 } from '../src/encrypt/key_manager';
 
 test('should be decrypted same', () => {
     const key = generateKeyPair();
-    const keyPrivate = newFromPrivateKey(key);
-    const keyPublic = newFromPublicKey(key);
+    const keyPrivate = new Key(null, key);
+    const keyPublic = new Key(key, null);
 
     const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
     testsInput.forEach((test) => {
@@ -24,7 +24,7 @@ test('should be decrypted same', () => {
 
 test('storing key in local storage', () => {
     const key1 = generateKeyPair();
-    var privateKey = newFromPrivateKey(key1);
+    const privateKey = new Key(null, key1);
     storePrivateKey(privateKey);
     const s1 = privateKey.PrivateKey;
     const s2 = loadFromLocalStorage().PrivateKey;
@@ -33,10 +33,10 @@ test('storing key in local storage', () => {
 
 test('should be decrypted same with stored keys', () => {
     const key = generateKeyPair();
-    var privateKey = newFromPrivateKey(key);
+    const privateKey = new Key(null, key);
     storePrivateKey(privateKey);
 
-    const keyPublic = newFromPublicKey(key);
+    const keyPublic = new Key(key, null);
     const keyLocalStorage = loadFromLocalStorage();
 
     const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
@@ -51,7 +51,7 @@ test('should be decrypted same with stored keys', () => {
 
 test('should not be encrypted with private key', () => {
     const key = generateKeyPair();
-    const keyPrivate = newFromPrivateKey(key);
+    const keyPrivate = new Key(null, key);
 
     const keyLocalStorage = loadFromLocalStorage();
 
@@ -75,7 +75,7 @@ test('should not be encrypted with private key', () => {
 
 test('should not be decrypted with public key', () => {
     const key = generateKeyPair();
-    const keyPublic = newFromPublicKey(key);
+    const keyPublic = new Key(key, null);
 
     const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
     testsInput.forEach((test) => {
