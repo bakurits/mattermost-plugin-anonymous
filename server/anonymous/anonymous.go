@@ -36,10 +36,8 @@ type Config struct {
 // PluginAPI API form mattermost plugin
 type PluginAPI interface {
 	SendEphemeralPost(userID string, post *model.Post) *model.Post
-	
 	GetActivePlugins() ([]PluginIdentifier, error)
 	GetConfiguration() *config.Config
-	
 	utils_store.API
 }
 
