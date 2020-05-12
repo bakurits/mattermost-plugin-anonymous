@@ -1,9 +1,10 @@
 package command_test
 
 import (
-	"github.com/bakurits/mattermost-plugin-anonymous/server/command"
 	"strings"
 	"testing"
+
+	"github.com/bakurits/mattermost-plugin-anonymous/server/command"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/test"
 

@@ -134,10 +134,10 @@ func (p *plugin) ServeHTTP(_ *mattermostPlugin.Context, w http.ResponseWriter, r
 	p.httpHandler.ServeHTTP(w, req)
 }
 
-// getConfiguration retrieves the active Config under lock, making it safe to use
+// GetConfiguration retrieves the active Config under lock, making it safe to use
 // concurrently. The active Config may change underneath the client of this method, but
 // the struct returned by this API call is considered immutable.
-func (p *plugin) getConfiguration() *config.Config {
+func (p *plugin) GetConfiguration() *config.Config {
 	p.configurationLock.RLock()
 	defer p.configurationLock.RUnlock()
 

@@ -3,6 +3,7 @@ NPM ?= $(shell command -v npm 2> /dev/null)
 CURL ?= $(shell command -v curl 2> /dev/null)
 MANIFEST_FILE ?= plugin.json
 GOPATH ?= $(shell go env GOPATH)
+MOCKER = mocker.sh
 GO_TEST_FLAGS ?= -race
 GO_BUILD_FLAGS ?=
 MM_UTILITIES_DIR ?= ../mattermost-utilities
@@ -23,7 +24,12 @@ ifneq ($(wildcard build/custom.mk),)
 endif
 
 ## Checks the code style, tests, builds and bundles the plugin.
-all: check-style test dist
+all: mock check-style test dist
+
+## Generating mock files with shell script
+mock:
+	chmod +x ${MOCKER}
+	./${MOCKER}
 
 ## Propagates plugin manifest information into the server/ and webapp/ folders as required.
 .PHONY: apply

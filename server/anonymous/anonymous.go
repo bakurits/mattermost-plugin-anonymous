@@ -1,6 +1,7 @@
 package anonymous
 
 import (
+	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	utils_store "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
@@ -16,6 +17,9 @@ type Anonymous interface {
 
 	StorePublicKey(userID string, publicKey crypto.PublicKey) error
 	GetPublicKey(userID string) (crypto.PublicKey, error)
+
+	UnverifiedPlugins() []PluginIdentifier
+	StartPluginChecks() error
 }
 
 // Dependencies contains all API dependencies
@@ -32,18 +36,29 @@ type Config struct {
 // PluginAPI API form mattermost plugin
 type PluginAPI interface {
 	SendEphemeralPost(userID string, post *model.Post) *model.Post
+	
+	GetActivePlugins() ([]PluginIdentifier, error)
+	GetConfiguration() *config.Config
+	
 	utils_store.API
 }
 
 type anonymous struct {
 	Config
+	pluginVerificationTracker *pluginVerificationTracker
 }
 
 // New returns new Anonymous API object
 func New(apiConfig Config) Anonymous {
-	return &anonymous{
+	return newAnonymous(apiConfig)
+}
+
+func newAnonymous(apiConfig Config) *anonymous {
+	a := &anonymous{
 		Config: apiConfig,
 	}
+	a.initializeValidatedPackages()
+	return a
 }
 
 //StorePublicKey store public key in plugin's KeyValue Store
