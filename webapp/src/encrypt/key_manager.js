@@ -36,7 +36,7 @@ async function storeKeyPair(key) {
     const privateKey = new Key(null, key);
     storePrivateKey(privateKey);
     const publicKey = new Key(key, null);
-    return Client.storePublicKey(publicKey);
+    return Client.storePublicKey(publicKey.PublicKey);
 }
 
 /**
@@ -44,7 +44,7 @@ async function storeKeyPair(key) {
  * @param {Key | null} key object of Key
  */
 export function storePrivateKey(key) {
-    if (key === null || key.PrivateKey === null) {
+    if (key === null || key.PrivateKey === '') {
         return;
     }
     localStorage.setItem(LOCAL_STORAGE_KEY, key.PrivateKey);
@@ -60,7 +60,7 @@ export function loadFromLocalStorage() {
     if (!keyData) {
         return null;
     }
-    const privateKey = newFromPrivateKey(keyData);
+    const privateKey = newFromPrivateKey(Buffer.from(keyData, 'base64').toString());
     if (!privateKey) {
         return null;
     }

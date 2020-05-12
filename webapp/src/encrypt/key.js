@@ -15,13 +15,17 @@ export class Key {
      * @returns base64 string of public key
      */
     get PublicKey() {
+        let keyString = null;
         if (this.publicKey != null) {
-            return this.publicKey.exportKey('public');
+            keyString = this.publicKey.exportKey('public');
         }
         if (this.privateKey != null) {
-            return this.privateKey.exportKey('public');
+            keyString = this.privateKey.exportKey('public');
         }
-        return null;
+        if (!keyString) {
+            return '';
+        }
+        return Buffer.from(keyString).toString('base64');
     }
 
     /**
@@ -31,7 +35,8 @@ export class Key {
         if (this.privateKey == null) {
             return '';
         }
-        return this.privateKey.exportKey('private');
+        const keyString = this.privateKey.exportKey('private');
+        return Buffer.from(keyString).toString('base64');
     }
 
     /**

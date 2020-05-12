@@ -74,7 +74,7 @@ export default class Hooks {
             const message = encrypter.encrypt(messageText).toString('base64');
             return {
                 message,
-                public_key: keyString,
+                public_key: Buffer.from(keyString).toString('base64'),
             };
         }));
 

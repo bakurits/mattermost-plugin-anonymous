@@ -11,10 +11,16 @@ export default class Client {
         this.url = `/plugins/${id}/api/v1`;
     }
 
+    /*
+     *  @param {string} publicKey
+     */
     storePublicKey = async (publicKey) => {
-        return this.doPost(`${this.url}/pub_key`, {public_key: Buffer.from(publicKey.PublicKey).toString('base64')});
+        return this.doPost(`${this.url}/pub_key`, {public_key: publicKey});
     };
 
+    /*
+     *  @param {string} userID
+     */
     retrievePublicKey = async (userID) => {
         return this.doGet(`${this.url}/pub_key?user_id=${userID}`);
     };
