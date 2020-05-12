@@ -5,6 +5,7 @@ export default class Plugin {
     initialize(registry, store) {
         const hook = new Hooks(store, null);
         registry.registerSlashCommandWillBePostedHook(hook.slashCommandWillBePostedHook);
+        registry.registerMessageWillFormatHook(hook.messageWillFormatHook);
     }
 }
 

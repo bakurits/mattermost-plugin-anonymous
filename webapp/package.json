@@ -62,6 +62,7 @@
     "eccrypto": "^1.1.3",
     "hybrid-crypto-js": "^0.2.2",
     "mattermost-redux": "latest",
+    "node-rsa": "^1.0.8",
     "react": "16.8.6",
     "react-redux": "5.0.7",
     "redux": "4.0.1",
