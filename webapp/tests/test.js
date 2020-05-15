@@ -3,7 +3,7 @@ import 'mattermost-webapp/tests/setup';
 import {Key} from '../src/encrypt/key';
 
 import {
-    generateKeyPair, loadFromLocalStorage,
+    generateKeyPair, loadKeyFromLocalStorage,
     storePrivateKey,
 } from '../src/encrypt/key_manager';
 
@@ -27,7 +27,7 @@ test('storing key in local storage', () => {
     const privateKey = new Key(null, key1);
     storePrivateKey(privateKey);
     const s1 = privateKey.PrivateKey;
-    const s2 = loadFromLocalStorage().PrivateKey;
+    const s2 = loadKeyFromLocalStorage().PrivateKey;
     expect(s1).toStrictEqual(s2);
 });
 
@@ -37,7 +37,7 @@ test('should be decrypted same with stored keys', () => {
     storePrivateKey(privateKey);
 
     const keyPublic = new Key(key, null);
-    const keyLocalStorage = loadFromLocalStorage();
+    const keyLocalStorage = loadKeyFromLocalStorage();
 
     const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
     testsInput.forEach((test) => {
@@ -53,7 +53,7 @@ test('should not be encrypted with private key', () => {
     const key = generateKeyPair();
     const keyPrivate = new Key(null, key);
 
-    const keyLocalStorage = loadFromLocalStorage();
+    const keyLocalStorage = loadKeyFromLocalStorage();
 
     const testsInput = [[1, 3, 123], {key: 'value'}, 'bakuri'];
     testsInput.forEach((test) => {

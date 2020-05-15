@@ -1,12 +1,13 @@
 import {Client4} from 'mattermost-redux/client';
 
 import {
-    generateAndStoreKeyPair, loadFromLocalStorage,
+    generateAndStoreKeyPair, loadKeyFromLocalStorage,
     storePrivateKey,
 } from '../encrypt/key_manager';
 import {sendEphemeralPost} from '../actions/actions';
-import Client from '../api_client';
 import {newFromPublicKey, newFromPrivateKey} from '../encrypt/key';
+import Client from '../api_client';
+import Cache from '../cache';
 
 export default class Hooks {
     constructor(store, settings) {
@@ -50,7 +51,7 @@ export default class Hooks {
             return Promise.resolve({message: '/anonymous keypair --overwrite ' + privateKey.PublicKey, args});
 
         case '--export':
-            privateKey = loadFromLocalStorage();
+            privateKey = loadKeyFromLocalStorage();
             this.store.dispatch(sendEphemeralPost('Your private key:\n' + privateKey.PrivateKey, args.channel_id));
             return Promise.resolve({});
         default:
@@ -88,6 +89,27 @@ export default class Hooks {
         return Promise.resolve({});
     };
 
+    decryptMessage = (post) => {
+        // message text in database
+        const {message} = post;
+
+        const decrypter = loadKeyFromLocalStorage();
+
+        if (decrypter === null) {
+            return "Message couldn't be decrypted!";
+        }
+
+        const messageObject = Array.from(JSON.parse(Buffer.from(message, 'base64').toString()));
+
+        const myMessages = messageObject.filter((value) => {
+            return (value.public_key === decrypter.PublicKey);
+        });
+        if (myMessages.length === 0) {
+            return '';
+        }
+        return decrypter.decrypt(Buffer.from(myMessages[0].message, 'base64'));
+    }
+
     slashCommandWillBePostedHook = (message, contextArgs) => {
         const commands = message.split(/(\s+)/).filter((e) => e.trim().length > 0);
 
@@ -111,30 +133,21 @@ export default class Hooks {
     }
 
     messageWillFormatHook = (post) => {
-        // message text in database
-        const {message} = post;
-
+        const {id} = post;
         const {props} = post;
+        const {message} = post;
 
         if (!props || !props.encrypted) {
             return message;
         }
 
-        const decrypter = loadFromLocalStorage();
-
-        if (decrypter === null) {
-            return "Message couldn't be decrypted!";
+        const cachedMessage = Cache.get(id);
+        if (cachedMessage) {
+            return cachedMessage;
         }
 
-        const messageObject = Array.from(JSON.parse(Buffer.from(message, 'base64').toString()));
-
-        const myMessages = messageObject.filter((value) => {
-            return (value.public_key === decrypter.PublicKey);
-        });
-        if (myMessages.length === 0) {
-            return '';
-        }
-
-        return decrypter.decrypt(Buffer.from(myMessages[0].message, 'base64'));
+        const decryptedMessage = this.decryptMessage(post);
+        Cache.put(id, decryptedMessage);
+        return decryptedMessage;
     }
 }
