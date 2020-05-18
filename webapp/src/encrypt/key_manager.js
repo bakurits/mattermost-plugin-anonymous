@@ -30,7 +30,7 @@ export async function generateAndStoreKeyPair() {
 /**
  * store private key in a local storage
  * @param {NodeRSA} key is nodeRSA key object
- * @returns {Object} returns newly generated NodeRSA object
+ * @returns {Object} returns response from api call
  */
 async function storeKeyPair(key) {
     const privateKey = new Key(null, key);

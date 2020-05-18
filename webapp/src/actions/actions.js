@@ -3,6 +3,10 @@ import {PostTypes} from 'mattermost-redux/action_types';
 
 import manifest from '../manifest';
 
+/**
+ * @param {string} message, message to be posted
+ * @param {number} channelId, channel id in which message should be posted
+ */
 export function sendEphemeralPost(message, channelId) {
     return (dispatch, getState) => {
         const timestamp = Date.now();
