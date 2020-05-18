@@ -55,7 +55,7 @@ export function storePrivateKey(key) {
  * @returns {Key | null} returns new key object loaded from localstorage
  * or null if localstorage is empty
  */
-export function loadFromLocalStorage() {
+export function loadKeyFromLocalStorage() {
     const keyData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!keyData) {
         return null;
