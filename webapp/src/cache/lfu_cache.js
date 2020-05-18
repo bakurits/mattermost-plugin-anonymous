@@ -6,8 +6,8 @@ export default class LFUCache {
     }
 
     /**
-     * @param {string} key, postID for which we need a message
-     * @returns {string | null} decrypted message if present, null if not
+     * @param {string} key, key for which we need a value
+     * @returns {string | null} value if present, null if not
      */
     get = (key) => {
         if (this.data[key]) {
@@ -18,7 +18,7 @@ export default class LFUCache {
     };
 
     /**
-     * @param {string} key, postID for which we need to delete an entry
+     * @param {string} key for which we need to delete an entry
      * @returns {string | null} value which we are deleting
      */
     delete = (key) => {
@@ -28,8 +28,8 @@ export default class LFUCache {
     };
 
     /**
-     * @param {string} key, postID for which we need a message
-     * @param {string | null} val, decrypted message
+     * @param {string} key for which we want to store a value
+     * @param {string | null} val, value to store
      * @returns {string | null} entry which we replaced
      */
     put = (key, val) => {
