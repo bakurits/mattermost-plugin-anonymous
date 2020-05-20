@@ -32,7 +32,7 @@ const getStyle = makeStyleFromTheme(() => {
     };
 });
 
-const ANONYMOUS_ICON = "<svg xmlns='http://www.w3.org/2000/svg' x='0px'" +
+const ANONYMOUS_ICON = "<svg xmlns='http://www.w3.org/2000/svg' x='0px' width='25' height='25'" +
     " y='0px' viewBox='0 0 1000 1000' enable-background='new 0 0 1000 1000' xml:space='preserve'> " +
     "<g><g transform='translate(0.000000,511.000000) scale(0.100000,-0.100000)'>" +
     "<path d='M3001.6,4371.9c-1065.2-351.8-1955.6-657.5-1982.3-681.8c-60.7-55.8-84.9-140.7-131-436.7c-99.5-657.5-114-" +
