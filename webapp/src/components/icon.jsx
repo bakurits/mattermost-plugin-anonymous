@@ -27,13 +27,13 @@ const getStyle = makeStyleFromTheme(() => {
     return {
         iconStyle: {
             position: 'relative',
-            top: '-1',
+            top: '2px',
         },
     };
 });
 
-const ANONYMOUS_ICON = "<svg xmlns='http://www.w3.org/2000/svg' x='0px' width='25' height='25'" +
-    " y='0px' viewBox='0 0 1000 1000' enable-background='new 0 0 1000 1000' xml:space='preserve'> " +
+const ANONYMOUS_ICON = "<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' width='25' height='25'" +
+    " viewBox='0 0 1000 1000' enable-background='new 0 0 1000 1000' xml:space='preserve'> " +
     "<g><g transform='translate(0.000000,511.000000) scale(0.100000,-0.100000)'>" +
     "<path d='M3001.6,4371.9c-1065.2-351.8-1955.6-657.5-1982.3-681.8c-60.7-55.8-84.9-140.7-131-436.7c-99.5-657.5-114-" +
     '1790.6-26.7-2438.5c237.8-1810.1,939-3234.3,2135.2-4340.7c264.5-245,693.9-572.6,1006.9-766.7c334.8-206.2,914.7-' +
