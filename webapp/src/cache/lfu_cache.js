@@ -47,7 +47,8 @@ export default class LFUCache {
      * @returns {string} key for the least frequently used entry in the dictionary
      */
     getLFU = () => {
-        return Object.keys(this.data).sort((key1, key2) => {
+        let keys = Object.keys(this.data);
+        keys.sort((key1, key2) => {
             if (this.data[key1].frequency < this.data[key2].frequency) {
                 return -1;
             }
@@ -55,7 +56,8 @@ export default class LFUCache {
                 return 1;
             }
             return 0;
-        })[0];
+        });
+        return keys[0];
     }
 }
 
