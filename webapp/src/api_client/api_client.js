@@ -25,6 +25,15 @@ export default class Client {
         return this.doGet(`${this.url}/pub_key?user_id=${userID}`);
     };
 
+    getEncryptionStatus = async (channelID) => {
+        //todo add api call
+        return true;
+    }
+    setEncryptionStatus = async (channelID, status) => {
+        //todo add api call
+        return {status: 'OK'};
+    }
+
     doGet = async (url, headers = {}) => {
         const opts = Client4.getOptions(headers);
         const options = {

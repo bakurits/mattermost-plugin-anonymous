@@ -1,7 +1,12 @@
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/common';
 import {PostTypes} from 'mattermost-redux/action_types';
 
+import ActionTypes from '../action_types';
+
+import Constants from '../constants';
+
 import manifest from '../manifest';
+import Client from '../api_client';
 
 export function sendEphemeralPost(message, channelId) {
     return (dispatch, getState) => {
@@ -24,5 +29,69 @@ export function sendEphemeralPost(message, channelId) {
             data: post,
             channelId,
         });
+    };
+}
+
+export function enableEncryption(channelId) {
+    return async (dispatch, getState) => {
+        if (getState()[Constants.REDUCER_ID].encryptionState !== true) {
+            const response = await Client.setEncryptionStatus(channelId, true);
+            if (response.status !== 'OK') {
+                return;
+            }
+            dispatch({
+                type: ActionTypes.ENABLE_ENCRYPTION,
+            });
+        }
+    };
+}
+
+export function disableEncryption(channelId) {
+    return async (dispatch, getState) => {
+        if (getState()[Constants.REDUCER_ID].encryptionState !== false) {
+            const response = await Client.setEncryptionStatus(channelId, false);
+            if (response.status !== 'OK') {
+                return;
+            }
+            dispatch({
+                type: ActionTypes.DISABLE_ENCRYPTION,
+            });
+        }
+    };
+}
+
+export function toggleEncryption(channelId) {
+    return async (dispatch, getState) => {
+        if (getState()[Constants.REDUCER_ID].encryptionState === false) {
+            const response = await Client.setEncryptionStatus(channelId, true);
+            if (response.status !== 'OK') {
+                return;
+            }
+            dispatch({
+                type: ActionTypes.ENABLE_ENCRYPTION,
+            });
+        } else {
+            const response = await Client.setEncryptionStatus(channelId, false);
+            if (response.status !== 'OK') {
+                return;
+            }
+            dispatch({
+                type: ActionTypes.DISABLE_ENCRYPTION,
+            });
+        }
+    };
+}
+
+export function initializeEncryptionStatus(status) {
+    return async (dispatch) => {
+        if (status === true) {
+            dispatch({
+                type: ActionTypes.ENABLE_ENCRYPTION,
+            });
+        } else {
+            dispatch({
+                type: ActionTypes.DISABLE_ENCRYPTION,
+            });
+        }
     };
 }
