@@ -24,6 +24,7 @@ export default class ChannelChangeListener {
 }
 
 export const initializeEncryptionStatusForChannel = async (channelID) => {
+    console.log(channelID);
     const encryptionStatus = await Client.getEncryptionStatus(channelID);
     this.store.dispatch(initializeEncryptionStatus(encryptionStatus));
 };

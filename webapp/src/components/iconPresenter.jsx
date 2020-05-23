@@ -6,7 +6,7 @@ import {makeStyleFromTheme} from 'mattermost-redux/utils/theme_utils';
 import SVGs from '../constants/SVGs';
 
 const IconPresenter = ({encryptionEnabled}) => {
-    const style = getStyle(encryptionEnabled);
+    const style = getStyle();
     return (
         <FormattedMessage
             id='anonymous.encryption.ariaLabel'
@@ -16,7 +16,7 @@ const IconPresenter = ({encryptionEnabled}) => {
                 <span
                     style={style.iconStyle}
                     aria-label={ariaLabel}
-                    dangerouslySetInnerHTML={{__html: SVGs.ANONYMOUS_ICON}}
+                    dangerouslySetInnerHTML={{__html: encryptionEnabled ? SVGs.ANONYMOUS_ICON_ENABLED : SVGs.ANONYMOUS_ICON_DISABLED}}
                 />
             )}
         </FormattedMessage>
@@ -27,11 +27,10 @@ IconPresenter.propTypes = {
     encryptionEnabled: PropTypes.bool.isRequired,
 };
 
-const getStyle = (encryptionEnabled) => {
+const getStyle = () => {
     return makeStyleFromTheme(() => {
         return {
             iconStyle: {
-                fill: (encryptionEnabled) ? 'green' : 'black',
                 position: 'relative',
                 top: '2px',
             },
