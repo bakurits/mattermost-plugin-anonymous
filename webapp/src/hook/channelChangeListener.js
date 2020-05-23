@@ -14,7 +14,7 @@ export default class ChannelChangeListener {
         const newValue = getCurrentChannelId(this.store.getState());
         if (newValue !== this.previousValue) {
             this.previousValue = newValue;
-            await initializeEncryptionStatusForChannel(newValue);
+            await initializeEncryptionStatusForChannel(this.store.dispatch, newValue);
         }
     }
 
@@ -23,8 +23,7 @@ export default class ChannelChangeListener {
     }
 }
 
-export const initializeEncryptionStatusForChannel = async (channelID) => {
-    console.log(channelID);
+export const initializeEncryptionStatusForChannel = async (dispatch, channelID) => {
     const encryptionStatus = await Client.getEncryptionStatus(channelID);
-    this.store.dispatch(initializeEncryptionStatus(encryptionStatus));
+    dispatch(initializeEncryptionStatus(encryptionStatus));
 };

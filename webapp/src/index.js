@@ -15,7 +15,7 @@ export default class Plugin {
     initialize(registry, store) {
         registry.registerReducer(reducer);
         this.channelChangeListener = new ChannelChangeListener(store);
-        initializeEncryptionStatusForChannel(getCurrentChannelId(store.getState()));
+        initializeEncryptionStatusForChannel(store.dispatch, getCurrentChannelId(store.getState()));
 
         registry.registerChannelHeaderButtonAction(
             // eslint-disable-next-line react/jsx-filename-extension
