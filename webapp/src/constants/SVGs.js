@@ -24,10 +24,9 @@ const anonymousIconEnd = " x='0px' y='0px' width='25' height='25'" +
     '5C4838.3,620.7,4789.8,611,4663.6,545.5z M5163.4,74.8c128.6-106.7,123.7-264.5-12.1-405.2c-63.1-65.5-63.1-70.4-65.' +
     '5-473.1l-2.4-407.6h-84.9h-84.9l-4.9,407.6c-2.4,402.8-2.4,410.1-63.1,473.1c-131,138.3-138.3,276.6-21.8,400.' +
     "3C4908.7,159.7,5059.1,162.2,5163.4,74.8z'/></g></g> </svg>";
-const fillBlack = "style='fill:black'";
 const fillGreen = "style='fill:green'";
 
 export default {
     ANONYMOUS_ICON_ENABLED: anonymousIconStart + fillGreen + anonymousIconEnd,
-    ANONYMOUS_ICON_DISABLED: anonymousIconStart + fillBlack + anonymousIconEnd,
+    ANONYMOUS_ICON_DISABLED: anonymousIconStart + anonymousIconEnd,
 };

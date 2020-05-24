@@ -1,12 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {FormattedMessage} from 'react-intl';
-import {makeStyleFromTheme} from 'mattermost-redux/utils/theme_utils';
 
 import SVGs from '../constants/SVGs';
 
 const IconPresenter = ({encryptionEnabled}) => {
-    const style = getStyle();
+    const style = {
+        position: 'relative',
+        top: '2px',
+    };
     return (
         <FormattedMessage
             id='anonymous.encryption.ariaLabel'
@@ -14,7 +16,7 @@ const IconPresenter = ({encryptionEnabled}) => {
         >
             {(ariaLabel) => (
                 <span
-                    style={style.iconStyle}
+                    style={style}
                     aria-label={ariaLabel}
                     dangerouslySetInnerHTML={{__html: encryptionEnabled ? SVGs.ANONYMOUS_ICON_ENABLED : SVGs.ANONYMOUS_ICON_DISABLED}}
                 />
@@ -25,17 +27,6 @@ const IconPresenter = ({encryptionEnabled}) => {
 
 IconPresenter.propTypes = {
     encryptionEnabled: PropTypes.bool.isRequired,
-};
-
-const getStyle = () => {
-    return makeStyleFromTheme(() => {
-        return {
-            iconStyle: {
-                position: 'relative',
-                top: '2px',
-            },
-        };
-    });
 };
 
 export default IconPresenter;
