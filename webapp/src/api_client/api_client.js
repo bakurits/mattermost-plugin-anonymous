@@ -20,9 +20,10 @@ export default class Client {
 
     /*
      *  @param {string} userID
+     *  @returns {[string]} returns list of public keys
      */
-    retrievePublicKey = async (userID) => {
-        return this.doGet(`${this.url}/pub_key?user_id=${userID}`);
+    retrievePublicKey = async (userIDs) => {
+        return this.doPost(`${this.url}/pub_keys`, {user_ids: userIDs})
     };
 
     doGet = async (url, headers = {}) => {

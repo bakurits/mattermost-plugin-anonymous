@@ -3,6 +3,10 @@ package plugin_test
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/bakurits/mattermost-plugin-anonymous/server/api"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
@@ -12,9 +16,6 @@ import (
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/test"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
@@ -26,8 +27,12 @@ func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 	mockStore.EXPECT().LoadUser("key_in").Return(&store.User{
 		MattermostUserID: "key_in",
 		PublicKey:        []byte{1, 1},
-	}, nil)
-	mockStore.EXPECT().LoadUser(gomock.Any()).Return(nil, errors.New("some error"))
+	}, nil).AnyTimes()
+	mockStore.EXPECT().LoadUser("key_in2").Return(&store.User{
+		MattermostUserID: "key_in2",
+		PublicKey:        []byte{2, 2},
+	}, nil).AnyTimes()
+	mockStore.EXPECT().LoadUser(gomock.Any()).Return(nil, errors.New("some error")).AnyTimes()
 
 	mockStore.EXPECT().StoreUser(&store.User{
 		MattermostUserID: "key_in",
@@ -50,8 +55,8 @@ func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 		{
 			name: "test bad request",
 			request: test.Request{
-				Method: "GET",
-				URL:    fmt.Sprintf("%s/pub_key", config.PathAPI),
+				Method: "POST",
+				URL:    fmt.Sprintf("%s/pub_keys", config.PathAPI),
 			},
 			expectedResponse: test.ExpectedResponse{
 				StatusCode:   http.StatusBadRequest,
@@ -66,8 +71,11 @@ func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 		{
 			name: "test not registered user",
 			request: test.Request{
-				Method: "GET",
-				URL:    fmt.Sprintf("%s/pub_key?user_id=%s", config.PathAPI, "asd"),
+				Method: "POST",
+				URL:    fmt.Sprintf("%s/pub_keys", config.PathAPI),
+				Body: struct {
+					UserIDs []string `json:"user_ids"`
+				}{UserIDs: []string{"abc"}},
 			},
 			expectedResponse: test.ExpectedResponse{
 				StatusCode:   http.StatusNoContent,
@@ -82,15 +90,36 @@ func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 		{
 			name: "test success",
 			request: test.Request{
-				Method: "GET",
-				URL:    fmt.Sprintf("%s/pub_key?user_id=%s", config.PathAPI, "key_in"),
+				Method: "POST",
+				URL:    fmt.Sprintf("%s/pub_keys", config.PathAPI),
+				Body: struct {
+					UserIDs []string `json:"user_ids"`
+				}{UserIDs: []string{"key_in"}},
 			},
 			expectedResponse: test.ExpectedResponse{
 				StatusCode:   http.StatusOK,
 				ResponseType: test.ContentTypeJSON,
 				Body: struct {
-					PublicKey string `json:"public_key"`
-				}{PublicKey: crypto.PublicKey([]byte{1, 1}).String()},
+					PublicKeys []string `json:"public_keys"`
+				}{PublicKeys: []string{crypto.PublicKey([]byte{1, 1}).String()}},
+			},
+			userID: "abc",
+		},
+		{
+			name: "test successs",
+			request: test.Request{
+				Method: "POST",
+				URL:    fmt.Sprintf("%s/pub_keys", config.PathAPI),
+				Body: struct {
+					UserIDs []string `json:"user_ids"`
+				}{UserIDs: []string{"key_in", "key_in2"}},
+			},
+			expectedResponse: test.ExpectedResponse{
+				StatusCode:   http.StatusOK,
+				ResponseType: test.ContentTypeJSON,
+				Body: struct {
+					PublicKeys []string `json:"public_keys"`
+				}{PublicKeys: []string{crypto.PublicKey([]byte{1, 1}).String(), crypto.PublicKey([]byte{2, 2}).String()}},
 			},
 			userID: "abc",
 		},

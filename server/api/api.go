@@ -7,8 +7,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gorilla/schema"
-
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
@@ -43,7 +41,7 @@ func newHandler(an anonymous.Anonymous) *handler {
 		an:     an,
 	}
 	apiRouter := h.Router.PathPrefix(config.PathAPI).Subrouter()
-	apiRouter.HandleFunc("/pub_key", h.extractUserIDMiddleware(h.handleGetPublicKey())).Methods("GET")
+	apiRouter.HandleFunc("/pub_keys", h.extractUserIDMiddleware(h.handleGetPublicKeys())).Methods("POST")
 	apiRouter.HandleFunc("/pub_key", h.extractUserIDMiddleware(h.handleSetPublicKey())).Methods("POST")
 	return h
 }
@@ -79,29 +77,42 @@ func (h *handler) extractUserIDMiddleware(handler handlerWithUserID) http.Handle
 }
 
 // handleGetPublicKey handle get public key request
-func (h *handler) handleGetPublicKey() handlerWithUserID {
+func (h *handler) handleGetPublicKeys() handlerWithUserID {
 	type request struct {
-		UserID string `schema:"user_id"`
+		UserIDs []string `json:"user_ids"`
 	}
 	type response struct {
-		PublicKey string `json:"public_key"`
+		PublicKeys []string `json:"public_keys"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request, _ string) {
+
 		var req request
-		err := schema.NewDecoder().Decode(&req, r.URL.Query())
-		if err != nil || req.UserID == "" {
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
 			h.jsonError(w, Error{Message: "Bad Request", StatusCode: http.StatusBadRequest})
 			return
 		}
 
-		pubKey, err := h.an.GetPublicKey(req.UserID)
-		if err != nil || pubKey == nil {
+		userIDs := req.UserIDs
+
+		pubKeys := make([]string, 0)
+
+		if len(userIDs) == 0 {
 			h.jsonError(w, Error{Message: "public key doesn't exists", StatusCode: http.StatusNoContent})
 			return
 		}
 
-		h.respondWithJSON(w, response{PublicKey: pubKey.String()})
+		for _, userID := range userIDs {
+			pubKey, err := h.an.GetPublicKey(userID)
+			if err != nil || pubKey == nil {
+				h.jsonError(w, Error{Message: "public key doesn't exists", StatusCode: http.StatusNoContent})
+				return
+			}
+			pubKeys = append(pubKeys, pubKey.String())
+		}
+
+		h.respondWithJSON(w, response{PublicKeys: pubKeys})
 	}
 }
 
