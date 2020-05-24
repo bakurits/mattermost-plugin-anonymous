@@ -47,6 +47,20 @@ func (mr *MockStoreMockRecorder) DeleteUser(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockStore)(nil).DeleteUser), arg0)
 }
 
+// IsEncryptionEnabled mocks base method
+func (m *MockStore) IsEncryptionEnabled(arg0, arg1 string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsEncryptionEnabled", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsEncryptionEnabled indicates an expected call of IsEncryptionEnabled
+func (mr *MockStoreMockRecorder) IsEncryptionEnabled(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsEncryptionEnabled", reflect.TypeOf((*MockStore)(nil).IsEncryptionEnabled), arg0, arg1)
+}
+
 // LoadUser mocks base method
 func (m *MockStore) LoadUser(arg0 string) (*store.User, error) {
 	m.ctrl.T.Helper()
@@ -60,6 +74,20 @@ func (m *MockStore) LoadUser(arg0 string) (*store.User, error) {
 func (mr *MockStoreMockRecorder) LoadUser(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadUser", reflect.TypeOf((*MockStore)(nil).LoadUser), arg0)
+}
+
+// SetEncryptionStatus mocks base method
+func (m *MockStore) SetEncryptionStatus(arg0, arg1 string, arg2 bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetEncryptionStatus", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetEncryptionStatus indicates an expected call of SetEncryptionStatus
+func (mr *MockStoreMockRecorder) SetEncryptionStatus(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetEncryptionStatus", reflect.TypeOf((*MockStore)(nil).SetEncryptionStatus), arg0, arg1, arg2)
 }
 
 // StoreUser mocks base method
