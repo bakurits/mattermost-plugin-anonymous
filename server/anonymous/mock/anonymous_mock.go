@@ -8,7 +8,6 @@ import (
 	anonymous "github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 	config "github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	crypto "github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
-	store "github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	gomock "github.com/golang/mock/gomock"
 	model "github.com/mattermost/mattermost-server/v5/model"
 	reflect "reflect"
@@ -35,20 +34,6 @@ func NewMockAnonymous(ctrl *gomock.Controller) *MockAnonymous {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockAnonymous) EXPECT() *MockAnonymousMockRecorder {
 	return m.recorder
-}
-
-// DeleteUser mocks base method
-func (m *MockAnonymous) DeleteUser(arg0 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteUser", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteUser indicates an expected call of DeleteUser
-func (mr *MockAnonymousMockRecorder) DeleteUser(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockAnonymous)(nil).DeleteUser), arg0)
 }
 
 // GetActivePlugins mocks base method
@@ -95,6 +80,35 @@ func (mr *MockAnonymousMockRecorder) GetPublicKey(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPublicKey", reflect.TypeOf((*MockAnonymous)(nil).GetPublicKey), arg0)
 }
 
+// GetUsersInChannel mocks base method
+func (m *MockAnonymous) GetUsersInChannel(arg0, arg1 string, arg2, arg3 int) ([]*model.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersInChannel", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].([]*model.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersInChannel indicates an expected call of GetUsersInChannel
+func (mr *MockAnonymousMockRecorder) GetUsersInChannel(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersInChannel", reflect.TypeOf((*MockAnonymous)(nil).GetUsersInChannel), arg0, arg1, arg2, arg3)
+}
+
+// IsEncryptionEnabledForChannel mocks base method
+func (m *MockAnonymous) IsEncryptionEnabledForChannel(arg0, arg1 string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsEncryptionEnabledForChannel", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsEncryptionEnabledForChannel indicates an expected call of IsEncryptionEnabledForChannel
+func (mr *MockAnonymousMockRecorder) IsEncryptionEnabledForChannel(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsEncryptionEnabledForChannel", reflect.TypeOf((*MockAnonymous)(nil).IsEncryptionEnabledForChannel), arg0, arg1)
+}
+
 // KVDelete mocks base method
 func (m *MockAnonymous) KVDelete(arg0 string) *model.AppError {
 	m.ctrl.T.Helper()
@@ -138,19 +152,16 @@ func (mr *MockAnonymousMockRecorder) KVSet(arg0, arg1 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KVSet", reflect.TypeOf((*MockAnonymous)(nil).KVSet), arg0, arg1)
 }
 
-// LoadUser mocks base method
-func (m *MockAnonymous) LoadUser(arg0 string) (*store.User, error) {
+// PublishWebSocketEvent mocks base method
+func (m *MockAnonymous) PublishWebSocketEvent(arg0 string, arg1 map[string]interface{}, arg2 *model.WebsocketBroadcast) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LoadUser", arg0)
-	ret0, _ := ret[0].(*store.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	m.ctrl.Call(m, "PublishWebSocketEvent", arg0, arg1, arg2)
 }
 
-// LoadUser indicates an expected call of LoadUser
-func (mr *MockAnonymousMockRecorder) LoadUser(arg0 interface{}) *gomock.Call {
+// PublishWebSocketEvent indicates an expected call of PublishWebSocketEvent
+func (mr *MockAnonymousMockRecorder) PublishWebSocketEvent(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoadUser", reflect.TypeOf((*MockAnonymous)(nil).LoadUser), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWebSocketEvent", reflect.TypeOf((*MockAnonymous)(nil).PublishWebSocketEvent), arg0, arg1, arg2)
 }
 
 // SendEphemeralPost mocks base method
@@ -165,6 +176,20 @@ func (m *MockAnonymous) SendEphemeralPost(arg0 string, arg1 *model.Post) *model.
 func (mr *MockAnonymousMockRecorder) SendEphemeralPost(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendEphemeralPost", reflect.TypeOf((*MockAnonymous)(nil).SendEphemeralPost), arg0, arg1)
+}
+
+// SetEncryptionStatusForChannel mocks base method
+func (m *MockAnonymous) SetEncryptionStatusForChannel(arg0, arg1 string, arg2 bool) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetEncryptionStatusForChannel", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetEncryptionStatusForChannel indicates an expected call of SetEncryptionStatusForChannel
+func (mr *MockAnonymousMockRecorder) SetEncryptionStatusForChannel(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetEncryptionStatusForChannel", reflect.TypeOf((*MockAnonymous)(nil).SetEncryptionStatusForChannel), arg0, arg1, arg2)
 }
 
 // StartPluginChecks mocks base method
@@ -193,20 +218,6 @@ func (m *MockAnonymous) StorePublicKey(arg0 string, arg1 crypto.PublicKey) error
 func (mr *MockAnonymousMockRecorder) StorePublicKey(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StorePublicKey", reflect.TypeOf((*MockAnonymous)(nil).StorePublicKey), arg0, arg1)
-}
-
-// StoreUser mocks base method
-func (m *MockAnonymous) StoreUser(arg0 *store.User) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StoreUser", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// StoreUser indicates an expected call of StoreUser
-func (mr *MockAnonymousMockRecorder) StoreUser(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreUser", reflect.TypeOf((*MockAnonymous)(nil).StoreUser), arg0)
 }
 
 // UnverifiedPlugins mocks base method

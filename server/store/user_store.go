@@ -8,7 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-const userStoreKeyPrefix = "user_"
+// UserStoreKeyPrefix prefix for user data key is kvsotre
+const UserStoreKeyPrefix = "user_"
 
 // UserStore API for user KVStore
 type UserStore interface {
@@ -25,7 +26,7 @@ type User struct {
 
 func (s *pluginStore) LoadUser(mattermostUserID string) (*User, error) {
 	user := &User{}
-	err := store.LoadJSON(s.userStore, fmt.Sprintf("%s%s", userStoreKeyPrefix, mattermostUserID), user)
+	err := store.LoadJSON(s.userStore, fmt.Sprintf("%s%s", UserStoreKeyPrefix, mattermostUserID), user)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error while loading a user with id : %s", mattermostUserID)
 	}
@@ -36,7 +37,7 @@ func (s *pluginStore) StoreUser(user *User) error {
 	if user == nil {
 		return errors.New("user is nil")
 	}
-	err := store.SetJSON(s.userStore, fmt.Sprintf("%s%s", userStoreKeyPrefix, user.MattermostUserID), user)
+	err := store.SetJSON(s.userStore, fmt.Sprintf("%s%s", UserStoreKeyPrefix, user.MattermostUserID), user)
 	if err != nil {
 		return errors.Wrap(err, "Error while storing user")
 	}
@@ -44,7 +45,7 @@ func (s *pluginStore) StoreUser(user *User) error {
 }
 
 func (s *pluginStore) DeleteUser(mattermostUserID string) error {
-	err := s.userStore.Delete(fmt.Sprintf("%s%s", userStoreKeyPrefix, mattermostUserID))
+	err := s.userStore.Delete(fmt.Sprintf("%s%s", UserStoreKeyPrefix, mattermostUserID))
 	if err != nil {
 		return errors.Wrapf(err, "Error while deleting a user with id : %s", mattermostUserID)
 	}

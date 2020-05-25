@@ -13,10 +13,12 @@ import (
 // Anonymous API for business logic
 type Anonymous interface {
 	PluginAPI
-	store.Store
 
 	StorePublicKey(userID string, publicKey crypto.PublicKey) error
 	GetPublicKey(userID string) (crypto.PublicKey, error)
+
+	IsEncryptionEnabledForChannel(channelID, userID string) bool
+	SetEncryptionStatusForChannel(channelID, userID string, status bool) error
 
 	UnverifiedPlugins() []PluginIdentifier
 	StartPluginChecks() error
@@ -38,6 +40,9 @@ type PluginAPI interface {
 	SendEphemeralPost(userID string, post *model.Post) *model.Post
 	GetActivePlugins() ([]PluginIdentifier, error)
 	GetConfiguration() *config.Config
+
+	GetUsersInChannel(channelID, sortBy string, page, perPage int) ([]*model.User, error)
+	PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model.WebsocketBroadcast)
 	utils_store.API
 }
 
@@ -74,4 +79,36 @@ func (a *anonymous) GetPublicKey(userID string) (crypto.PublicKey, error) {
 		return nil, errors.Wrapf(err, "Error while loading a user %s", userID)
 	}
 	return user.PublicKey, nil
+}
+
+//IsEncryptionEnabledForChannel checks if encryption is enabled for channel
+func (a *anonymous) IsEncryptionEnabledForChannel(channelID, userID string) bool {
+	return a.IsEncryptionEnabled(channelID, userID)
+}
+
+//SetEncryptionStatusForChannel sets new connection status
+func (a *anonymous) SetEncryptionStatusForChannel(channelID, userID string, status bool) error {
+	if !a.isUserInChannel(channelID, userID) {
+		return errors.New("can't find user in channel")
+	}
+
+	err := a.SetEncryptionStatus(channelID, userID, status)
+	if err != nil {
+		return errors.Wrap(err, "error while setting connection status")
+	}
+	return nil
+}
+
+func (a *anonymous) isUserInChannel(channelID, userID string) bool {
+	for page := 0; ; page = page + 1 {
+		users, err := a.PluginAPI.GetUsersInChannel(channelID, "username", page, 100)
+		if err != nil || len(users) == 0 {
+			return false
+		}
+		for _, user := range users {
+			if user.Id == userID {
+				return true
+			}
+		}
+	}
 }

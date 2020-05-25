@@ -66,6 +66,21 @@ func (mr *MockPluginMockRecorder) GetConfiguration() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfiguration", reflect.TypeOf((*MockPlugin)(nil).GetConfiguration))
 }
 
+// GetUsersInChannel mocks base method
+func (m *MockPlugin) GetUsersInChannel(arg0, arg1 string, arg2, arg3 int) ([]*model.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersInChannel", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].([]*model.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersInChannel indicates an expected call of GetUsersInChannel
+func (mr *MockPluginMockRecorder) GetUsersInChannel(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersInChannel", reflect.TypeOf((*MockPlugin)(nil).GetUsersInChannel), arg0, arg1, arg2, arg3)
+}
+
 // KVDelete mocks base method
 func (m *MockPlugin) KVDelete(arg0 string) *model.AppError {
 	m.ctrl.T.Helper()
@@ -135,6 +150,18 @@ func (m *MockPlugin) OnConfigurationChange() error {
 func (mr *MockPluginMockRecorder) OnConfigurationChange() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OnConfigurationChange", reflect.TypeOf((*MockPlugin)(nil).OnConfigurationChange))
+}
+
+// PublishWebSocketEvent mocks base method
+func (m *MockPlugin) PublishWebSocketEvent(arg0 string, arg1 map[string]interface{}, arg2 *model.WebsocketBroadcast) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "PublishWebSocketEvent", arg0, arg1, arg2)
+}
+
+// PublishWebSocketEvent indicates an expected call of PublishWebSocketEvent
+func (mr *MockPluginMockRecorder) PublishWebSocketEvent(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWebSocketEvent", reflect.TypeOf((*MockPlugin)(nil).PublishWebSocketEvent), arg0, arg1, arg2)
 }
 
 // SendEphemeralPost mocks base method

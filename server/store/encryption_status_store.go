@@ -2,15 +2,19 @@ package store
 
 import (
 	"fmt"
+
 	"github.com/mattermost/mattermost-server/v5/mlog"
 	"github.com/pkg/errors"
 )
 
 const (
+	// EncryptionStatusStoreKeyPrefix prefix for encryption status data key is kvsotre
 	EncryptionStatusStoreKeyPrefix = "encryption_status_"
 
+	// EncryptionDisabled indicates that encryption is disabled for channel
 	EncryptionDisabled byte = 0
-	EncryptionEnabled  byte = 1
+	// EncryptionEnabled indicates that encryption is enebled for channel
+	EncryptionEnabled byte = 1
 )
 
 // EncryptionStatusStore API for encryption statuses in KVStore

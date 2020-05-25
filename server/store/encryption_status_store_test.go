@@ -1,6 +1,8 @@
 package store_test
 
 import (
+	"testing"
+
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
 	utilsStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store"
 	mockStore "github.com/bakurits/mattermost-plugin-anonymous/server/utils/store/mock"
@@ -8,7 +10,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func Test_pluginStore_SetEncryptionStatus(t *testing.T) {

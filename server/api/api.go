@@ -1,11 +1,10 @@
-// Copyright (c) 2019-present Mattermost, Inc. All Rights Reserved.
-// See License for license information.
-
 package api
 
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/mattermost/mattermost-server/v5/model"
 
 	"github.com/gorilla/schema"
 
@@ -16,6 +15,11 @@ import (
 	"github.com/mattermost/mattermost-server/v5/mlog"
 
 	"github.com/gorilla/mux"
+)
+
+const (
+	// WSEventEncryptionStatusChange web socket broadcast event for status change
+	WSEventEncryptionStatusChange = "encryption_status_change"
 )
 
 // Error - returned error message for api errors
@@ -42,9 +46,12 @@ func newHandler(an anonymous.Anonymous) *handler {
 		Router: mux.NewRouter(),
 		an:     an,
 	}
-	apiRouter := h.Router.PathPrefix(config.PathAPI).Subrouter()
-	apiRouter.HandleFunc("/pub_key", h.extractUserIDMiddleware(h.handleGetPublicKey())).Methods("GET")
-	apiRouter.HandleFunc("/pub_key", h.extractUserIDMiddleware(h.handleSetPublicKey())).Methods("POST")
+	apiRouter := h.Router.PathPrefix(config.APIPath).Subrouter()
+	apiRouter.HandleFunc("/pub_key", h.extractUserIDMiddleware(h.handleGetPublicKey())).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/pub_key", h.extractUserIDMiddleware(h.handleSetPublicKey())).Methods(http.MethodPost)
+
+	apiRouter.HandleFunc("/encryption_status", h.extractUserIDMiddleware(h.handleGetEncryptionStatus())).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/encryption_status", h.extractUserIDMiddleware(h.handleChangeEncryptionStatus())).Methods(http.MethodPost)
 	return h
 }
 
@@ -131,6 +138,72 @@ func (h *handler) handleSetPublicKey() handlerWithUserID {
 			return
 		}
 
+		h.respondWithSuccess(w)
+	}
+}
+
+// handleSetPublicKey - returns handlerFunc which
+// returns encryption status for channel and current user
+func (h *handler) handleGetEncryptionStatus() handlerWithUserID {
+	type request struct {
+		ChannelID string `schema:"channel_id"`
+	}
+
+	type response struct {
+		IsEncryptionEnabled bool `json:"is_encryption_enabled"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request, mattermostUserID string) {
+		var req request
+		err := schema.NewDecoder().Decode(&req, r.URL.Query())
+		if err != nil {
+			h.jsonError(w, Error{Message: "Bad Request", StatusCode: http.StatusBadRequest})
+			return
+		}
+
+		isEnabled := h.an.IsEncryptionEnabledForChannel(req.ChannelID, mattermostUserID)
+
+		h.respondWithJSON(w, response{
+			IsEncryptionEnabled: isEnabled,
+		})
+	}
+}
+
+func (h *handler) handleChangeEncryptionStatus() handlerWithUserID {
+	type request struct {
+		ChannelID string `json:"channel_id"`
+		Status    bool   `json:"status"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request, mattermostUserID string) {
+		var req request
+		err := json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			h.jsonError(w, Error{Message: "Bad Request", StatusCode: http.StatusBadRequest})
+			return
+		}
+
+		err = h.an.SetEncryptionStatusForChannel(req.ChannelID, mattermostUserID, req.Status)
+		if err != nil {
+			h.jsonError(w, Error{
+				Message:    "Error while changing encryption status",
+				StatusCode: http.StatusBadRequest,
+			})
+			return
+		}
+
+		h.an.PublishWebSocketEvent(
+			WSEventEncryptionStatusChange,
+
+			map[string]interface{}{
+				"status": req.Status,
+			},
+
+			&model.WebsocketBroadcast{
+				UserId:    mattermostUserID,
+				ChannelId: req.ChannelID,
+			},
+		)
 		h.respondWithSuccess(w)
 	}
 }
