@@ -8,7 +8,7 @@ import manifest from './manifest';
 
 import Hooks from './hook/hook';
 import Icon from './components/iconContainer';
-import {toggleEncryption} from './actions/actions';
+import {handleEncryptionStatusChange, toggleEncryption} from './actions/actions';
 import ChannelChangeListener, {initializeEncryptionStatusForChannel} from './hook/channelChangeListener';
 
 export default class Plugin {
@@ -31,6 +31,7 @@ export default class Plugin {
 
         registry.registerSlashCommandWillBePostedHook(hook.slashCommandWillBePostedHook);
         registry.registerMessageWillFormatHook(hook.messageWillFormatHook);
+        registry.registerWebSocketEventHandler(`custom_${manifest.id}_encryption_status_change`, handleEncryptionStatusChange(store));
     }
 
     uninitialize() {

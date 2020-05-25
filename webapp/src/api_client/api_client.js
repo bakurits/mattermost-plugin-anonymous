@@ -25,13 +25,28 @@ export default class Client {
         return this.doGet(`${this.url}/pub_key?user_id=${userID}`);
     };
 
+    /*
+     *  @param {string} channelID
+     *  @returns {boolean} encryption status
+     */
     getEncryptionStatus = async (channelID) => {
-        //todo add api call
-        return true;
+        try {
+            const res = await this.doGet(`${this.url}/encryption_status?channel_id=${channelID}`);
+            return res.is_encryption_enabled;
+        } catch (e) {
+            return false;
+        }
     }
+
+    /*
+     *  @param {string} channelID
+     *  @param {boolean} status
+     */
     setEncryptionStatus = async (channelID, status) => {
-        //todo add api call
-        return {status: 'OK'};
+        return this.doPost(`${this.url}/encryption_status`, {
+            channel_id: channelID,
+            status,
+        });
     }
 
     doGet = async (url, headers = {}) => {
