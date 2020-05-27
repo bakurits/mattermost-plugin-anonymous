@@ -182,6 +182,13 @@ func (h *handler) handleChangeEncryptionStatus() handlerWithUserID {
 			h.jsonError(w, Error{Message: "Bad Request", StatusCode: http.StatusBadRequest})
 			return
 		}
+		if req.Status {
+			unverifiedPlugins := h.an.UnverifiedPlugins()
+			if len(unverifiedPlugins) > 0 {
+				h.jsonError(w, Error{Message: "Unverified plugins detected", StatusCode: http.StatusForbidden})
+				return
+			}
+		}
 
 		err = h.an.SetEncryptionStatusForChannel(req.ChannelID, mattermostUserID, req.Status)
 		if err != nil {
