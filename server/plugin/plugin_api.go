@@ -13,7 +13,11 @@ func (p *plugin) SendEphemeralPost(userID string, post *model.Post) *model.Post 
 
 // GetUsersInChannel gets paginated user list for channel
 func (p *plugin) GetUsersInChannel(channelID, sortBy string, page, perPage int) ([]*model.User, error) {
-	return p.API.GetUsersInChannel(channelID, sortBy, page, perPage)
+	users, err := p.API.GetUsersInChannel(channelID, sortBy, page, perPage)
+	if err != nil {
+		return []*model.User{}, errors.Wrap(err, "error while retrieving user list")
+	}
+	return users, nil
 }
 
 // PublishWebSocketEvent sends broadcast
