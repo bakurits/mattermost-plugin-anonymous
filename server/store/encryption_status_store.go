@@ -1,20 +1,16 @@
 package store
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 
-	"github.com/mattermost/mattermost-server/v5/mlog"
 	"github.com/pkg/errors"
 )
 
 const (
 	// EncryptionStatusStoreKeyPrefix prefix for encryption status data key is kvsotre
-	EncryptionStatusStoreKeyPrefix = "encryption_status_"
-
-	// EncryptionDisabled indicates that encryption is disabled for channel
-	EncryptionDisabled byte = 0
-	// EncryptionEnabled indicates that encryption is enebled for channel
-	EncryptionEnabled byte = 1
+	EncryptionStatusStoreKeyPrefix = "es_"
 )
 
 // EncryptionStatusStore API for encryption statuses in KVStore
@@ -25,24 +21,51 @@ type EncryptionStatusStore interface {
 
 // IsEncryptionEnabled checks if encryption is enabled for channel and user
 func (s *pluginStore) IsEncryptionEnabled(channelID, userID string) bool {
-	data, err := s.encryptionStatusStore.Load(fmt.Sprintf("%s%s:%s", EncryptionStatusStoreKeyPrefix, channelID, userID))
-	if err != nil || len(data) == 0 {
-		mlog.Err(err)
+	data, err := s.encryptionStatusStore.Load(fmt.Sprintf("%s%s", EncryptionStatusStoreKeyPrefix, channelID))
+	if err != nil {
 		return false
 	}
-	return data[0] == EncryptionEnabled
+	var users []string
+	_ = gob.NewDecoder(bytes.NewBuffer(data)).Decode(&users)
+
+	for _, user := range users {
+		if user == userID {
+			return true
+		}
+	}
+	return false
 }
 
 // SetEncryptionStatus changes encryption state
 func (s *pluginStore) SetEncryptionStatus(channelID, userID string, status bool) error {
-	var enableIndicator byte
-	if status {
-		enableIndicator = EncryptionEnabled
-	} else {
-		enableIndicator = EncryptionDisabled
+	data, err := s.encryptionStatusStore.Load(fmt.Sprintf("%s%s", EncryptionStatusStoreKeyPrefix, channelID))
+	var users []string
+	if err == nil {
+		_ = gob.NewDecoder(bytes.NewBuffer(data)).Decode(&users)
 	}
 
-	err := s.encryptionStatusStore.Store(fmt.Sprintf("%s%s:%s", EncryptionStatusStoreKeyPrefix, channelID, userID), []byte{enableIndicator})
+	ind := -1
+	for idx, user := range users {
+		if user == userID {
+			ind = idx
+			break
+		}
+	}
+
+	if status {
+		if ind != -1 {
+			return nil
+		}
+		users = append(users, userID)
+	} else {
+		if ind == -1 {
+			return nil
+		}
+		users = append(users[:ind], users[ind+1:]...)
+	}
+	var newData bytes.Buffer
+	_ = gob.NewEncoder(&newData).Encode(users)
+	err = s.encryptionStatusStore.Store(fmt.Sprintf("%s%s", EncryptionStatusStoreKeyPrefix, channelID), newData.Bytes())
 	if err != nil {
 		return errors.Wrap(err, "error while storing encryption data")
 	}

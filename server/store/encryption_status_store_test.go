@@ -1,6 +1,8 @@
 package store_test
 
 import (
+	"bytes"
+	"encoding/gob"
 	"testing"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
@@ -14,11 +16,15 @@ import (
 
 func Test_pluginStore_SetEncryptionStatus(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	tassert := assert.New(t)
+	is := assert.New(t)
 	m := mockStore.NewMockAPI(ctrl)
+	m.EXPECT().KVGet(stringLikeMatcher(store.EncryptionStatusStoreKeyPrefix+"userIn")).Return(stringsToGob([]string{"userIn"}), nil).AnyTimes()
+	m.EXPECT().KVGet(stringLikeMatcher(store.EncryptionStatusStoreKeyPrefix+"multiple_userIn")).Return(stringsToGob([]string{"1", "2", "userIn", "3"}), nil).AnyTimes()
+	m.EXPECT().KVGet(stringLikeMatcher(store.EncryptionStatusStoreKeyPrefix+"empty")).Return(stringsToGob([]string{""}), nil).AnyTimes()
+	m.EXPECT().KVGet(gomock.Any()).Return([]byte{}, &model.AppError{}).AnyTimes()
 
-	m.EXPECT().KVSet(stringLikeMatcher("encryption_status_channelIn:userIn"), gomock.Any()).Return(nil).AnyTimes()
-	m.EXPECT().KVSet(gomock.Any(), gomock.Any()).Return(&model.AppError{}).AnyTimes()
+	m.EXPECT().KVSet(stringLikeMatcher(store.EncryptionStatusStoreKeyPrefix+"cant_store"), gomock.Any()).Return(&model.AppError{}).AnyTimes()
+	m.EXPECT().KVSet(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 	defer ctrl.Finish()
 
@@ -43,7 +49,7 @@ func Test_pluginStore_SetEncryptionStatus(t *testing.T) {
 			},
 			args: args{
 				userID:    "userIn",
-				channelID: "channelIn",
+				channelID: "userIn",
 				status:    true,
 			},
 			wantErr: false,
@@ -55,10 +61,34 @@ func Test_pluginStore_SetEncryptionStatus(t *testing.T) {
 			},
 			args: args{
 				userID:    "notIn",
-				channelID: "notIn",
-				status:    false,
+				channelID: "cant_store",
+				status:    true,
 			},
 			wantErr: true,
+		},
+		{
+			name: "turning off",
+			fields: fields{
+				storeAPI: m,
+			},
+			args: args{
+				userID:    "userIn",
+				channelID: "multiple_userIn",
+				status:    false,
+			},
+			wantErr: false,
+		},
+		{
+			name: "turning off with when already is off",
+			fields: fields{
+				storeAPI: m,
+			},
+			args: args{
+				userID:    "4",
+				channelID: "multiple_userIn",
+				status:    false,
+			},
+			wantErr: false,
 		},
 	}
 
@@ -67,9 +97,15 @@ func Test_pluginStore_SetEncryptionStatus(t *testing.T) {
 			s := store.NewPluginStore(tt.fields.storeAPI)
 
 			err := s.SetEncryptionStatus(tt.args.channelID, tt.args.userID, tt.args.status)
-			test.CheckErr(tassert, tt.wantErr, err)
+			test.CheckErr(is, tt.wantErr, err)
 		})
 	}
+}
+
+func stringsToGob(users []string) []byte {
+	var data bytes.Buffer
+	_ = gob.NewEncoder(&data).Encode(users)
+	return data.Bytes()
 }
 
 func Test_pluginStore_IsEncryptionEnabled(t *testing.T) {
@@ -77,8 +113,8 @@ func Test_pluginStore_IsEncryptionEnabled(t *testing.T) {
 	is := assert.New(t)
 	m := mockStore.NewMockAPI(ctrl)
 
-	m.EXPECT().KVGet(stringLikeMatcher(store.EncryptionStatusStoreKeyPrefix+"channelIn:userIn")).Return([]byte{store.EncryptionEnabled}, nil).AnyTimes()
-	m.EXPECT().KVGet(stringLikeMatcher(store.EncryptionStatusStoreKeyPrefix+"channelInDisabled:userInDisabled")).Return([]byte{store.EncryptionDisabled}, nil).AnyTimes()
+	m.EXPECT().KVGet(stringLikeMatcher(store.EncryptionStatusStoreKeyPrefix+"channelIn")).Return(stringsToGob([]string{"userIn"}), nil).AnyTimes()
+	m.EXPECT().KVGet(stringLikeMatcher(store.EncryptionStatusStoreKeyPrefix+"channelInDisabled:userInDisabled")).Return([]byte{}, nil).AnyTimes()
 	m.EXPECT().KVGet(gomock.Any()).Return([]byte{}, &model.AppError{}).AnyTimes()
 
 	defer ctrl.Finish()
