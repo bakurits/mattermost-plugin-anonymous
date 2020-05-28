@@ -62,11 +62,15 @@ export default class Hooks {
     handlePost = async (commands, args) => {
         const users = await Client4.getProfilesInChannel(args.channel_id);
 
-        const userIDs = users.map((user) => {return user.id})
-        
+        const userIDs = users.map((user) => {
+            return user.id;
+        });
+
         const publicKeysb64 = await Client.retrievePublicKey(userIDs);
 
-        const publicKeys = publicKeysb64.public_keys.map((publicKey) => {return Buffer.from(publicKey, 'base64').toString();})
+        const publicKeys = publicKeysb64.public_keys.map((publicKey) => {
+            return Buffer.from(publicKey, 'base64').toString();
+        });
 
         const encrypted = await Promise.all(publicKeys.map((keyString) => {
             const encrypter = newFromPublicKey(keyString);
