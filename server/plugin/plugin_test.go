@@ -3,6 +3,7 @@ package plugin_test
 import (
 	"errors"
 	"fmt"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -323,10 +324,17 @@ func Test_plugin_ServeHTTP_ChangeEncryptionStatus(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	is := assert.New(t)
 
-	anonymousMock := mock.NewMockAnonymous(ctrl)
-	anonymousMock.EXPECT().SetEncryptionStatusForChannel("general", "storing_err_user", gomock.Any()).Return(errors.New("some error")).AnyTimes()
-	anonymousMock.EXPECT().SetEncryptionStatusForChannel(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-	anonymousMock.EXPECT().PublishWebSocketEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	anonymousMock1 := mock.NewMockAnonymous(ctrl)
+	anonymousMock1.EXPECT().SetEncryptionStatusForChannel("general", "storing_err_user", gomock.Any()).Return(errors.New("some error")).AnyTimes()
+	anonymousMock1.EXPECT().SetEncryptionStatusForChannel(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	anonymousMock1.EXPECT().PublishWebSocketEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	anonymousMock1.EXPECT().UnverifiedPlugins().Return([]anonymous.PluginIdentifier{}).AnyTimes()
+
+	anonymousMock2 := mock.NewMockAnonymous(ctrl)
+	anonymousMock2.EXPECT().SetEncryptionStatusForChannel("general", "storing_err_user", gomock.Any()).Return(errors.New("some error")).AnyTimes()
+	anonymousMock2.EXPECT().SetEncryptionStatusForChannel(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+	anonymousMock2.EXPECT().PublishWebSocketEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	anonymousMock2.EXPECT().UnverifiedPlugins().Return([]anonymous.PluginIdentifier{{ID: "123", Version: "123"}}).AnyTimes()
 
 	httpTest := test.HTTPTest{
 		Assertions: is,
@@ -337,11 +345,12 @@ func Test_plugin_ServeHTTP_ChangeEncryptionStatus(t *testing.T) {
 		name             string
 		request          test.Request
 		expectedResponse test.ExpectedResponse
-		config           *config.Config
+		an               anonymous.Anonymous
 		userID           string
 	}{
 		{
 			name: "not authorized test",
+			an:   anonymousMock1,
 			request: test.Request{
 				Method: "POST",
 				URL:    fmt.Sprintf("%s/encryption_status", config.APIPath),
@@ -365,6 +374,7 @@ func Test_plugin_ServeHTTP_ChangeEncryptionStatus(t *testing.T) {
 		},
 		{
 			name: "test bad request",
+			an:   anonymousMock1,
 			request: test.Request{
 				Method: "POST",
 				URL:    fmt.Sprintf("%s/encryption_status", config.APIPath),
@@ -388,6 +398,7 @@ func Test_plugin_ServeHTTP_ChangeEncryptionStatus(t *testing.T) {
 		},
 		{
 			name: "test can't change status",
+			an:   anonymousMock1,
 			request: test.Request{
 				Method: "POST",
 				URL:    fmt.Sprintf("%s/encryption_status", config.APIPath),
@@ -410,7 +421,32 @@ func Test_plugin_ServeHTTP_ChangeEncryptionStatus(t *testing.T) {
 			userID: "storing_err_user",
 		},
 		{
+			name: "test unverified plugins",
+			an:   anonymousMock2,
+			request: test.Request{
+				Method: "POST",
+				URL:    fmt.Sprintf("%s/encryption_status", config.APIPath),
+				Body: struct {
+					ChannelID string `json:"channel_id"`
+					Status    bool   `json:"status"`
+				}{
+					ChannelID: "general",
+					Status:    true,
+				},
+			},
+			expectedResponse: test.ExpectedResponse{
+				StatusCode:   http.StatusForbidden,
+				ResponseType: test.ContentTypeJSON,
+				Body: api.Error{
+					Message:    "Unverified plugins detected",
+					StatusCode: http.StatusForbidden,
+				},
+			},
+			userID: "in_general",
+		},
+		{
 			name: "test success",
+			an:   anonymousMock1,
 			request: test.Request{
 				Method: "POST",
 				URL:    fmt.Sprintf("%s/encryption_status", config.APIPath),
@@ -435,7 +471,7 @@ func Test_plugin_ServeHTTP_ChangeEncryptionStatus(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := plugin.NewWithAnonymous(anonymousMock, nil)
+			p := plugin.NewWithAnonymous(tt.an, nil)
 			req := httpTest.CreateHTTPRequest(tt.request)
 			req.Header.Add("Mattermost-User-ID", tt.userID)
 			rr := httptest.NewRecorder()
