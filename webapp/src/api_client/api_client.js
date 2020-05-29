@@ -11,14 +11,15 @@ export default class Client {
         this.url = `/plugins/${id}/api/v1`;
     }
 
-    /*
+    /**
      *  @param {string} publicKey
+     *  @returns {Object} response from api call
      */
     storePublicKey = async (publicKey) => {
         return this.doPost(`${this.url}/pub_key`, {public_key: publicKey});
     };
 
-    /*
+    /**
      *  @param {string} userID
      *  @returns {[string]} returns list of public keys
      */
@@ -26,6 +27,11 @@ export default class Client {
         return this.doPost(`${this.url}/pub_keys`, {user_ids: userIDs});
     };
 
+    /**
+     *  @param {string} url, api endpoint
+     *  @param {Object} headers, request headers
+     *  @returns {Object} response from api call
+     */
     doGet = async (url, headers = {}) => {
         const opts = Client4.getOptions(headers);
         const options = {
@@ -44,6 +50,12 @@ export default class Client {
         });
     };
 
+    /**
+     *  @param {string} url, api endpoint
+     *  @param {Object} body, request body
+     *  @param {Object} headers, request headers
+     *  @returns {Object} response from api call
+     */
     doPost = async (url, body, headers = {}) => {
         const opts = Client4.getOptions(headers);
         const options = {
