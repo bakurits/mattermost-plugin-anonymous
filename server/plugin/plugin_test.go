@@ -86,15 +86,36 @@ func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 		{
 			name: "test success",
 			request: test.Request{
-				Method: "GET",
-				URL:    fmt.Sprintf("%s/pub_key?user_id=%s", config.APIPath, "key_in"),
+				Method: "POST",
+				URL:    fmt.Sprintf("%s/pub_keys", config.PathAPI),
+				Body: struct {
+					UserIDs []string `json:"user_ids"`
+				}{UserIDs: []string{"key_in"}},
 			},
 			expectedResponse: test.ExpectedResponse{
 				StatusCode:   http.StatusOK,
 				ResponseType: test.ContentTypeJSON,
 				Body: struct {
-					PublicKey string `json:"public_key"`
-				}{PublicKey: crypto.PublicKey([]byte{1, 1}).String()},
+					PublicKeys []string `json:"public_keys"`
+				}{PublicKeys: []string{crypto.PublicKey([]byte{1, 1}).String()}},
+			},
+			userID: "abc",
+		},
+		{
+			name: "test successs",
+			request: test.Request{
+				Method: "POST",
+				URL:    fmt.Sprintf("%s/pub_keys", config.PathAPI),
+				Body: struct {
+					UserIDs []string `json:"user_ids"`
+				}{UserIDs: []string{"key_in", "key_in2"}},
+			},
+			expectedResponse: test.ExpectedResponse{
+				StatusCode:   http.StatusOK,
+				ResponseType: test.ContentTypeJSON,
+				Body: struct {
+					PublicKeys []string `json:"public_keys"`
+				}{PublicKeys: []string{crypto.PublicKey([]byte{1, 1}).String(), crypto.PublicKey([]byte{2, 2}).String()}},
 			},
 			userID: "abc",
 		},

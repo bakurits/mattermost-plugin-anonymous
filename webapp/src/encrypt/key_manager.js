@@ -30,7 +30,7 @@ export async function generateAndStoreKeyPair() {
 /**
  * store private key in a local storage
  * @param {NodeRSA} key is nodeRSA key object
- * @returns {Object} returns newly generated NodeRSA object
+ * @returns {Object} returns response from api call
  */
 async function storeKeyPair(key) {
     const privateKey = new Key(null, key);
@@ -55,7 +55,7 @@ export function storePrivateKey(key) {
  * @returns {Key | null} returns new key object loaded from localstorage
  * or null if localstorage is empty
  */
-export function loadFromLocalStorage() {
+export function loadKeyFromLocalStorage() {
     const keyData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!keyData) {
         return null;
