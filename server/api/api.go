@@ -47,8 +47,8 @@ func newHandler(an anonymous.Anonymous) *handler {
 		an:     an,
 	}
 	apiRouter := h.Router.PathPrefix(config.APIPath).Subrouter()
-	apiRouter.HandleFunc("/pub_key", h.extractUserIDMiddleware(h.handleGetPublicKey())).Methods(http.MethodGet)
-	apiRouter.HandleFunc("/pub_key", h.extractUserIDMiddleware(h.handleSetPublicKey())).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/pub_keys", h.extractUserIDMiddleware(h.handleGetPublicKeys())).Methods("POST")
+	apiRouter.HandleFunc("/pub_key", h.extractUserIDMiddleware(h.handleSetPublicKey())).Methods("POST")
 
 	apiRouter.HandleFunc("/encryption_status", h.extractUserIDMiddleware(h.handleGetEncryptionStatus())).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/encryption_status", h.extractUserIDMiddleware(h.handleChangeEncryptionStatus())).Methods(http.MethodPost)

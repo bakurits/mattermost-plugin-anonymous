@@ -4,18 +4,17 @@ import (
 	"errors"
 	"fmt"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous"
+	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous/mock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/bakurits/mattermost-plugin-anonymous/server/anonymous/mock"
 
 	"github.com/bakurits/mattermost-plugin-anonymous/server/api"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/config"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/crypto"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/plugin"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/store"
-	mockStore "github.com/bakurits/mattermost-plugin-anonymous/server/store/mock"
+	storeMock "github.com/bakurits/mattermost-plugin-anonymous/server/store/mock"
 	"github.com/bakurits/mattermost-plugin-anonymous/server/utils/test"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -24,23 +23,27 @@ import (
 func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
-	is := assert.New(t)
+	tassert := assert.New(t)
 
-	storeMock := mockStore.NewMockStore(ctrl)
-	storeMock.EXPECT().LoadUser("key_in").Return(&store.User{
+	mockStore := storeMock.NewMockStore(ctrl)
+	mockStore.EXPECT().LoadUser("key_in").Return(&store.User{
 		MattermostUserID: "key_in",
 		PublicKey:        []byte{1, 1},
-	}, nil)
-	storeMock.EXPECT().LoadUser(gomock.Any()).Return(nil, errors.New("some error"))
+	}, nil).AnyTimes()
+	mockStore.EXPECT().LoadUser("key_in2").Return(&store.User{
+		MattermostUserID: "key_in2",
+		PublicKey:        []byte{2, 2},
+	}, nil).AnyTimes()
+	mockStore.EXPECT().LoadUser(gomock.Any()).Return(nil, errors.New("some error")).AnyTimes()
 
-	storeMock.EXPECT().StoreUser(&store.User{
+	mockStore.EXPECT().StoreUser(&store.User{
 		MattermostUserID: "key_in",
 		PublicKey:        []byte{1, 1},
 	}).Return(nil)
-	storeMock.EXPECT().StoreUser(gomock.Any()).Return(errors.New("some error"))
+	mockStore.EXPECT().StoreUser(gomock.Any()).Return(errors.New("some error"))
 
 	httpTest := test.HTTPTest{
-		Assertions: is,
+		Assertions: tassert,
 		Encoder:    test.EncodeJSON,
 	}
 
@@ -54,8 +57,8 @@ func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 		{
 			name: "test bad request",
 			request: test.Request{
-				Method: "GET",
-				URL:    fmt.Sprintf("%s/pub_key", config.APIPath),
+				Method: "POST",
+				URL:    fmt.Sprintf("%s/pub_keys", config.APIPath),
 			},
 			expectedResponse: test.ExpectedResponse{
 				StatusCode:   http.StatusBadRequest,
@@ -70,8 +73,11 @@ func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 		{
 			name: "test not registered user",
 			request: test.Request{
-				Method: "GET",
-				URL:    fmt.Sprintf("%s/pub_key?user_id=%s", config.APIPath, "asd"),
+				Method: "POST",
+				URL:    fmt.Sprintf("%s/pub_keys", config.APIPath),
+				Body: struct {
+					UserIDs []string `json:"user_ids"`
+				}{UserIDs: []string{"abc"}},
 			},
 			expectedResponse: test.ExpectedResponse{
 				StatusCode:   http.StatusNoContent,
@@ -87,7 +93,7 @@ func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 			name: "test success",
 			request: test.Request{
 				Method: "POST",
-				URL:    fmt.Sprintf("%s/pub_keys", config.PathAPI),
+				URL:    fmt.Sprintf("%s/pub_keys", config.APIPath),
 				Body: struct {
 					UserIDs []string `json:"user_ids"`
 				}{UserIDs: []string{"key_in"}},
@@ -105,7 +111,7 @@ func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 			name: "test successs",
 			request: test.Request{
 				Method: "POST",
-				URL:    fmt.Sprintf("%s/pub_keys", config.PathAPI),
+				URL:    fmt.Sprintf("%s/pub_keys", config.APIPath),
 				Body: struct {
 					UserIDs []string `json:"user_ids"`
 				}{UserIDs: []string{"key_in", "key_in2"}},
@@ -123,7 +129,7 @@ func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := plugin.NewWithStore(storeMock, nil)
+			p := plugin.NewWithStore(mockStore, nil)
 			req := httpTest.CreateHTTPRequest(tt.request)
 			req.Header.Add("Mattermost-User-ID", tt.userID)
 			rr := httptest.NewRecorder()
@@ -138,12 +144,12 @@ func Test_plugin_ServeHTTP_SetPublicKey(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	tassert := assert.New(t)
 
-	storeMock := mockStore.NewMockStore(ctrl)
-	storeMock.EXPECT().StoreUser(&store.User{
+	mockStore := storeMock.NewMockStore(ctrl)
+	mockStore.EXPECT().StoreUser(&store.User{
 		MattermostUserID: "key_in",
 		PublicKey:        []byte{1, 1},
 	}).Return(nil)
-	storeMock.EXPECT().StoreUser(gomock.Any()).Return(errors.New("some error"))
+	mockStore.EXPECT().StoreUser(gomock.Any()).Return(errors.New("some error"))
 
 	httpTest := test.HTTPTest{
 		Assertions: tassert,
@@ -233,7 +239,7 @@ func Test_plugin_ServeHTTP_SetPublicKey(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := plugin.NewWithStore(storeMock, nil)
+			p := plugin.NewWithStore(mockStore, nil)
 			req := httpTest.CreateHTTPRequest(tt.request)
 			req.Header.Add("Mattermost-User-ID", tt.userID)
 			rr := httptest.NewRecorder()
