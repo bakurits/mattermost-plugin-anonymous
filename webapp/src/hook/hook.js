@@ -137,7 +137,7 @@ export default class Hooks {
         const commands = message.split(/(\s+)/).filter((e) => e.trim().length > 0);
 
         if (commands[0] !== '/anonymous') {
-            return Promise.resolve({});
+            return Promise.resolve({message, args: contextArgs});
         }
         if (commands.length < 2) {
             return Promise.resolve({message, args: contextArgs});

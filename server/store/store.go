@@ -7,15 +7,18 @@ import (
 // Store encapsulates all store APIs
 type Store interface {
 	UserStore
+	EncryptionStatusStore
 }
 
 type pluginStore struct {
-	userStore store.KVStore
+	userStore             store.KVStore
+	encryptionStatusStore store.KVStore
 }
 
 // NewPluginStore creates Store object from plugin.API
 func NewPluginStore(api store.API) Store {
 	return &pluginStore{
-		userStore: store.NewPluginStore(api),
+		userStore:             store.NewPluginStore(api),
+		encryptionStatusStore: store.NewPluginStore(api),
 	}
 }

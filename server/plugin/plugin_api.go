@@ -11,6 +11,20 @@ func (p *plugin) SendEphemeralPost(userID string, post *model.Post) *model.Post 
 	return p.API.SendEphemeralPost(userID, post)
 }
 
+// GetUsersInChannel gets paginated user list for channel
+func (p *plugin) GetUsersInChannel(channelID, sortBy string, page, perPage int) ([]*model.User, error) {
+	users, err := p.API.GetUsersInChannel(channelID, sortBy, page, perPage)
+	if err != nil {
+		return []*model.User{}, errors.Wrap(err, "error while retrieving user list")
+	}
+	return users, nil
+}
+
+// PublishWebSocketEvent sends broadcast
+func (p *plugin) PublishWebSocketEvent(event string, payload map[string]interface{}, broadcast *model.WebsocketBroadcast) {
+	p.API.PublishWebSocketEvent(event, payload, broadcast)
+}
+
 // GetActivePlugins returns list of installed plugins which are active
 func (p *plugin) GetActivePlugins() ([]anonymous.PluginIdentifier, error) {
 	pluginManifests, err := p.API.GetPlugins()

@@ -1,13 +1,14 @@
 package plugin
 
 import (
-	"github.com/bakurits/mattermost-plugin-anonymous/server/api"
 	"math/rand"
 	"net/http"
 	"reflect"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/bakurits/mattermost-plugin-anonymous/server/api"
 
 	mattermostPlugin "github.com/mattermost/mattermost-server/v5/plugin"
 
@@ -65,6 +66,18 @@ func NewWithStore(store store.Store, conf *config.Config) Plugin {
 			PluginAPI: p,
 		},
 	})
+	p.httpHandler = api.NewHTTPHandler(p.an)
+	return p
+}
+
+// NewWithAnonymous creates new plugin object from anonymous
+func NewWithAnonymous(an anonymous.Anonymous, conf *config.Config) Plugin {
+	p := &plugin{
+		configurationLock: &sync.RWMutex{},
+		config:            conf,
+		an:                an,
+	}
+
 	p.httpHandler = api.NewHTTPHandler(p.an)
 	return p
 }

@@ -27,11 +27,30 @@ export default class Client {
         return this.doPost(`${this.url}/pub_keys`, {user_ids: userIDs});
     };
 
-    /**
-     *  @param {string} url, api endpoint
-     *  @param {Object} headers, request headers
-     *  @returns {Object} response from api call
+    /*
+     *  @param {string} channelID
+     *  @returns {boolean} encryption status
      */
+    getEncryptionStatus = async (channelID) => {
+        try {
+            const res = await this.doGet(`${this.url}/encryption_status?channel_id=${channelID}`);
+            return res.is_encryption_enabled;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    /*
+     *  @param {string} channelID
+     *  @param {boolean} status
+     */
+    setEncryptionStatus = async (channelID, status) => {
+        return this.doPost(`${this.url}/encryption_status`, {
+            channel_id: channelID,
+            status,
+        });
+    }
+
     doGet = async (url, headers = {}) => {
         const opts = Client4.getOptions(headers);
         const options = {

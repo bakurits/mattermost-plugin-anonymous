@@ -10,6 +10,6 @@ const (
 	// CommandTrigger stores command trigger word
 	CommandTrigger = "anonymous"
 
-	// PathAPI stores api prefix
-	PathAPI = "/api/v1"
+	// APIPath stores api prefix
+	APIPath = "/api/v1"
 )
