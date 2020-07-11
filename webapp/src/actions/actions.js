@@ -103,9 +103,6 @@ export function initializeEncryptionStatus(status) {
 // eslint-disable-next-line no-unused-vars
 export function handleEncryptionStatusChange(store) {
     return (msg) => {
-        // eslint-disable-next-line no-console
-        console.log('connection status changed');
-        // eslint-disable-next-line no-console
-        console.log(msg);
+        store.dispatch(initializeEncryptionStatus(msg.data.status));
     };
 }

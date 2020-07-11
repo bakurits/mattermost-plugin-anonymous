@@ -7,7 +7,7 @@ import SVGs from '../constants/SVGs';
 const IconPresenter = ({encryptionEnabled}) => {
     const style = {
         position: 'relative',
-        top: '2px',
+        top: '5px',
     };
     return (
         <FormattedMessage
