@@ -4,6 +4,7 @@ import {Key} from '../src/encrypt/key';
 import {decrypt, encrypt} from '../src/encrypt/aes';
 
 import {generateKeyPair, loadKeyFromLocalStorage, storePrivateKey} from '../src/encrypt/key_manager';
+import LFUCache from '../src/cache/lfu_cache';
 
 test('should be decrypted same', () => {
     const key = generateKeyPair();
@@ -92,4 +93,17 @@ test('aes tests', () => {
         const g = decrypt(data.message, data.key);
         expect(g).toEqual(test);
     });
+});
+
+test('cache test', () => {
+    const cache = new LFUCache(2);
+    cache.put('key1', 'value1');
+    cache.put('key2', 'value2');
+    expect(cache.get('key1')).toEqual('value1');
+    expect(cache.get('key2')).toEqual('value2');
+    cache.put('key3', 'value3');
+    expect(cache.get('key2')).toEqual('value2');
+    expect(cache.get('key3')).toEqual('value3');
+    expect(cache.get('key1')).toBeNull();
+    expect(cache.getLFU()).toEqual('key3');
 });
