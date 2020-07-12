@@ -130,11 +130,12 @@ export default class Hooks {
             return '';
         }
         const encryptedAESKey = myMessages[0].aes_key;
+        const encryptedMessage = myMessages[0].message;
         if (!encryptedAESKey) {
             return "Message couldn't be decrypted!";
         }
         const aesKey = decrypter.decrypt(Buffer.from(encryptedAESKey, 'base64'));
-        return aesDecrypt(myMessages[0].message, aesKey);
+        return aesDecrypt(encryptedMessage, aesKey);
     }
 
     /**
