@@ -1,16 +1,16 @@
-import {Client4} from 'mattermost-redux/client';
 
 import {generateAndStoreKeyPair, loadKeyFromLocalStorage, storePrivateKey} from '../encrypt/key_manager';
 import {decrypt as aesDecrypt, encrypt as aesEncrypt} from '../encrypt/aes.js';
 import {sendEphemeralPost} from '../actions/actions';
 import {newFromPrivateKey, newFromPublicKey} from '../encrypt/key';
-import Client from '../api_client';
 import Cache from '../cache';
 
 export default class Hooks {
-    constructor(store, settings) {
+    constructor(store, settings, client4, client) {
         this.store = store;
         this.settings = settings;
+        this.Client4 = client4;
+        this.Client = client;
     }
 
     /**
@@ -28,37 +28,37 @@ export default class Hooks {
         }
 
         switch (commands[0]) {
-        case '--generate':
-            response = await generateAndStoreKeyPair();
-            if (response && response.status !== 'OK') {
-                return Promise.resolve({error: {message: 'Error occurred while trying to store key on a server'}});
-            }
-            this.store.dispatch(sendEphemeralPost('Your keys were successfully generated and stored', args.channel_id));
-            return Promise.resolve({});
+            case '--generate':
+                response = await generateAndStoreKeyPair();
+                if (response && response.status !== 'OK') {
+                    return Promise.resolve({error: {message: 'Error occurred while trying to store key on a server'}});
+                }
+                this.store.dispatch(sendEphemeralPost('Your keys were successfully generated and stored', args.channel_id));
+                return Promise.resolve({});
 
-        case '--overwrite':
-            if (commands.length < 2) {
-                return Promise.resolve({error: {message: "Private key isn't specified"}});
-            }
-            if (commands.length > 2) {
-                return Promise.resolve({error: {message: 'Too many arguments'}});
-            }
+            case '--overwrite':
+                if (commands.length < 2) {
+                    return Promise.resolve({error: {message: "Private key isn't specified"}});
+                }
+                if (commands.length > 2) {
+                    return Promise.resolve({error: {message: 'Too many arguments'}});
+                }
 
-            privateKeyString = commands[1];
-            privateKey = newFromPrivateKey(privateKeyString);
-            if (!key) {
-                return Promise.resolve({error: {message: 'Invalid private key'}});
-            }
+                privateKeyString = commands[1];
+                privateKey = newFromPrivateKey(privateKeyString);
+                if (!key) {
+                    return Promise.resolve({error: {message: 'Invalid private key'}});
+                }
 
-            storePrivateKey(privateKey);
-            return Promise.resolve({message: '/anonymous keypair --overwrite ' + privateKey.PublicKey, args});
+                storePrivateKey(privateKey);
+                return Promise.resolve({message: '/anonymous keypair --overwrite ' + privateKey.PublicKey, args});
 
-        case '--export':
-            privateKey = loadKeyFromLocalStorage();
-            this.store.dispatch(sendEphemeralPost('Your private key:\n' + privateKey.PrivateKey, args.channel_id));
-            return Promise.resolve({});
-        default:
-            break;
+            case '--export':
+                privateKey = loadKeyFromLocalStorage();
+                this.store.dispatch(sendEphemeralPost('Your private key:\n' + privateKey.PrivateKey, args.channel_id));
+                return Promise.resolve({});
+            default:
+                break;
         }
         return Promise.resolve({message: '/anonymous keypair' + commands[0], args});
     };
@@ -74,13 +74,13 @@ export default class Hooks {
     };
 
     encryptMessage = async (channelID, post) => {
-        const users = await Client4.getProfilesInChannel(channelID);
+        const users = await this.Client4.getProfilesInChannel(channelID);
 
         const userIDs = users.map((user) => {
             return user.id;
         });
 
-        const publicKeysb64 = await Client.retrievePublicKey(userIDs);
+        const publicKeysb64 = await this.Client.retrievePublicKey(userIDs);
 
         const publicKeys = publicKeysb64.public_keys.map((publicKey) => {
             return Buffer.from(publicKey, 'base64').toString();
@@ -98,13 +98,13 @@ export default class Hooks {
         }));
 
         const message = Buffer.from(JSON.stringify(encrypted)).toString('base64');
-        await Client4.createPost({
+        await this.Client4.createPost({
             channel_id: channelID,
             message,
             props: {encrypted: true},
         });
 
-        return Promise.resolve({});
+        return message;
     };
 
     /**
@@ -154,12 +154,12 @@ export default class Hooks {
         }
 
         switch (commands[1]) {
-        case 'keypair':
-            return this.handleKeyPair(commands.splice(2), contextArgs);
-        case 'a':
-            return this.handlePost(commands.splice(2), contextArgs);
-        default:
-            break;
+            case 'keypair':
+                return this.handleKeyPair(commands.splice(2), contextArgs);
+            case 'a':
+                return this.handlePost(commands.splice(2), contextArgs);
+            default:
+                break;
         }
 
         return Promise.resolve({message, args: contextArgs});
