@@ -28,37 +28,37 @@ export default class Hooks {
         }
 
         switch (commands[0]) {
-            case '--generate':
-                response = await generateAndStoreKeyPair();
-                if (response && response.status !== 'OK') {
-                    return Promise.resolve({error: {message: 'Error occurred while trying to store key on a server'}});
-                }
-                this.store.dispatch(sendEphemeralPost('Your keys were successfully generated and stored', args.channel_id));
-                return Promise.resolve({});
+        case '--generate':
+            response = await generateAndStoreKeyPair();
+            if (response && response.status !== 'OK') {
+                return Promise.resolve({error: {message: 'Error occurred while trying to store key on a server'}});
+            }
+            this.store.dispatch(sendEphemeralPost('Your keys were successfully generated and stored', args.channel_id));
+            return Promise.resolve({});
 
-            case '--overwrite':
-                if (commands.length < 2) {
-                    return Promise.resolve({error: {message: "Private key isn't specified"}});
-                }
-                if (commands.length > 2) {
-                    return Promise.resolve({error: {message: 'Too many arguments'}});
-                }
+        case '--overwrite':
+            if (commands.length < 2) {
+                return Promise.resolve({error: {message: "Private key isn't specified"}});
+            }
+            if (commands.length > 2) {
+                return Promise.resolve({error: {message: 'Too many arguments'}});
+            }
 
-                privateKeyString = commands[1];
-                privateKey = newFromPrivateKey(privateKeyString);
-                if (!key) {
-                    return Promise.resolve({error: {message: 'Invalid private key'}});
-                }
+            privateKeyString = commands[1];
+            privateKey = newFromPrivateKey(privateKeyString);
+            if (!key) {
+                return Promise.resolve({error: {message: 'Invalid private key'}});
+            }
 
-                storePrivateKey(privateKey);
-                return Promise.resolve({message: '/anonymous keypair --overwrite ' + privateKey.PublicKey, args});
+            storePrivateKey(privateKey);
+            return Promise.resolve({message: '/anonymous keypair --overwrite ' + privateKey.PublicKey, args});
 
-            case '--export':
-                privateKey = loadKeyFromLocalStorage();
-                this.store.dispatch(sendEphemeralPost('Your private key:\n' + privateKey.PrivateKey, args.channel_id));
-                return Promise.resolve({});
-            default:
-                break;
+        case '--export':
+            privateKey = loadKeyFromLocalStorage();
+            this.store.dispatch(sendEphemeralPost('Your private key:\n' + privateKey.PrivateKey, args.channel_id));
+            return Promise.resolve({});
+        default:
+            break;
         }
         return Promise.resolve({message: '/anonymous keypair' + commands[0], args});
     };
@@ -154,12 +154,12 @@ export default class Hooks {
         }
 
         switch (commands[1]) {
-            case 'keypair':
-                return this.handleKeyPair(commands.splice(2), contextArgs);
-            case 'a':
-                return this.handlePost(commands.splice(2), contextArgs);
-            default:
-                break;
+        case 'keypair':
+            return this.handleKeyPair(commands.splice(2), contextArgs);
+        case 'a':
+            return this.handlePost(commands.splice(2), contextArgs);
+        default:
+            break;
         }
 
         return Promise.resolve({message, args: contextArgs});
