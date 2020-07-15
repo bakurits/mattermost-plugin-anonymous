@@ -1,9 +1,9 @@
-
 import {generateAndStoreKeyPair, loadKeyFromLocalStorage, storePrivateKey} from '../encrypt/key_manager';
 import {decrypt as aesDecrypt, encrypt as aesEncrypt} from '../encrypt/aes.js';
 import {sendEphemeralPost} from '../actions/actions';
 import {newFromPrivateKey, newFromPublicKey} from '../encrypt/key';
 import Cache from '../cache';
+import Constants from '../constants';
 
 export default class Hooks {
     constructor(store, settings, client4, client) {
@@ -69,10 +69,21 @@ export default class Hooks {
      * @returns {Promise<Object>} resolved promise after sending messages to all users in channel
      */
     handlePost = async (commands, args) => {
-        await this.encryptMessage(args.channel_id, commands.join(' '));
+        const message = await this.encryptMessage(args.channel_id, commands.join(' '));
+        await this.Client4.createPost({
+            channel_id: args.channel_id,
+            message,
+            props: {encrypted: true},
+        });
+
         return Promise.resolve({});
     };
 
+    /**
+     * @param {string} channelID, channel id
+     * @param {Object} post, message to be encrypted
+     * @returns {string} encrypted message
+     */
     encryptMessage = async (channelID, post) => {
         const users = await this.Client4.getProfilesInChannel(channelID);
 
@@ -97,14 +108,7 @@ export default class Hooks {
             };
         }));
 
-        const message = Buffer.from(JSON.stringify(encrypted)).toString('base64');
-        await this.Client4.createPost({
-            channel_id: channelID,
-            message,
-            props: {encrypted: true},
-        });
-
-        return message;
+        return Buffer.from(JSON.stringify(encrypted)).toString('base64');
     };
 
     /**
@@ -186,5 +190,19 @@ export default class Hooks {
         const decryptedMessage = this.decryptMessage(post);
         Cache.put(id, decryptedMessage);
         return decryptedMessage;
+    }
+
+    /**
+     * @param {Object} post, post to be processed
+     * @returns {object} processed post
+     */
+    messageWillBePostedHook = async (post) => {
+        if (this.store.getState()[Constants.REDUCER_ID].encryptionState !== true) {
+            return Promise.resolve({post});
+        }
+        const newPost = post;
+        newPost.props = {encrypted: true};
+        newPost.message = await this.encryptMessage(post.channel_id, post.message);
+        return Promise.resolve({post: newPost});
     }
 }

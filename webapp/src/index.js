@@ -32,6 +32,7 @@ export default class Plugin {
 
         const hook = new Hooks(store, null, Client4, Client);
 
+        registry.registerMessageWillBePostedHook(hook.messageWillBePostedHook);
         registry.registerSlashCommandWillBePostedHook(hook.slashCommandWillBePostedHook);
         registry.registerMessageWillFormatHook(hook.messageWillFormatHook);
         registry.registerWebSocketEventHandler(`custom_${manifest.id}_encryption_status_change`, handleEncryptionStatusChange(store));
