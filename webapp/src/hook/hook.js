@@ -1,18 +1,16 @@
-import {Client4} from 'mattermost-redux/client';
 
-import {
-    generateAndStoreKeyPair, loadKeyFromLocalStorage,
-    storePrivateKey,
-} from '../encrypt/key_manager';
+import {generateAndStoreKeyPair, loadKeyFromLocalStorage, storePrivateKey} from '../encrypt/key_manager';
+import {decrypt as aesDecrypt, encrypt as aesEncrypt} from '../encrypt/aes.js';
 import {sendEphemeralPost} from '../actions/actions';
-import {newFromPublicKey, newFromPrivateKey} from '../encrypt/key';
-import Client from '../api_client';
+import {newFromPrivateKey, newFromPublicKey} from '../encrypt/key';
 import Cache from '../cache';
 
 export default class Hooks {
-    constructor(store, settings) {
+    constructor(store, settings, client4, client) {
         this.store = store;
         this.settings = settings;
+        this.Client4 = client4;
+        this.Client = client;
     }
 
     /**
@@ -71,13 +69,18 @@ export default class Hooks {
      * @returns {Promise<Object>} resolved promise after sending messages to all users in channel
      */
     handlePost = async (commands, args) => {
-        const users = await Client4.getProfilesInChannel(args.channel_id);
+        await this.encryptMessage(args.channel_id, commands.join(' '));
+        return Promise.resolve({});
+    };
+
+    encryptMessage = async (channelID, post) => {
+        const users = await this.Client4.getProfilesInChannel(channelID);
 
         const userIDs = users.map((user) => {
             return user.id;
         });
 
-        const publicKeysb64 = await Client.retrievePublicKey(userIDs);
+        const publicKeysb64 = await this.Client.retrievePublicKey(userIDs);
 
         const publicKeys = publicKeysb64.public_keys.map((publicKey) => {
             return Buffer.from(publicKey, 'base64').toString();
@@ -85,22 +88,23 @@ export default class Hooks {
 
         const encrypted = await Promise.all(publicKeys.map((keyString) => {
             const encrypter = newFromPublicKey(keyString);
-            const messageText = commands.join(' ');
-            const message = encrypter.encrypt(messageText).toString('base64');
+            const aesEncryptData = aesEncrypt(post);
+            const encryptedAESKey = encrypter.encrypt(aesEncryptData.key).toString('base64');
             return {
-                message,
+                message: aesEncryptData.message,
+                aes_key: encryptedAESKey,
                 public_key: Buffer.from(keyString).toString('base64'),
             };
         }));
 
         const message = Buffer.from(JSON.stringify(encrypted)).toString('base64');
-        await Client4.createPost({
-            channel_id: args.channel_id,
+        await this.Client4.createPost({
+            channel_id: channelID,
             message,
             props: {encrypted: true},
         });
 
-        return Promise.resolve({});
+        return message;
     };
 
     /**
@@ -122,10 +126,16 @@ export default class Hooks {
         const myMessages = messageObject.filter((value) => {
             return (value.public_key === decrypter.PublicKey);
         });
-        if (myMessages.length === 0) {
+        if (!myMessages || myMessages.length === 0) {
             return '';
         }
-        return decrypter.decrypt(Buffer.from(myMessages[0].message, 'base64'));
+        const encryptedAESKey = myMessages[0].aes_key;
+        const encryptedMessage = myMessages[0].message;
+        if (!encryptedAESKey) {
+            return "Message couldn't be decrypted!";
+        }
+        const aesKey = decrypter.decrypt(Buffer.from(encryptedAESKey, 'base64'));
+        return aesDecrypt(encryptedMessage, aesKey);
     }
 
     /**

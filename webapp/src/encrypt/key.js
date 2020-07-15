@@ -41,7 +41,7 @@ export class Key {
 
     /**
      *
-     * @param {Buffer} data message text
+     * @param {Object} data message text
      * @returns {string | null} returns encrypted text or null if public key isn't present
      */
     encrypt(data) {
