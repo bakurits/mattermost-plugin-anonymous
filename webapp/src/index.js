@@ -1,6 +1,9 @@
 import React from 'react';
+import {Client4} from 'mattermost-redux/client';
 
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
+
+import Client from 'api_client';
 
 import reducer from 'reducers';
 
@@ -18,16 +21,16 @@ export default class Plugin {
         initializeEncryptionStatusForChannel(store.dispatch, getCurrentChannelId(store.getState()));
 
         registry.registerChannelHeaderButtonAction(
-            // eslint-disable-next-line react/jsx-filename-extension
-            <Icon/>,
+        // eslint-disable-next-line react/jsx-filename-extension
+        <Icon/>,
             (channel) => {
                 store.dispatch(toggleEncryption(channel.id));
             },
             'toggle encryption',
             'toggle encryption'
-        );
+    );
 
-        const hook = new Hooks(store, null);
+        const hook = new Hooks(store, null, Client4, Client);
 
         registry.registerSlashCommandWillBePostedHook(hook.slashCommandWillBePostedHook);
         registry.registerMessageWillFormatHook(hook.messageWillFormatHook);
