@@ -24,8 +24,9 @@ test('hook encrypt/decrypt test', () => {
 
     hooks.encryptMessage('someChannel', message).then(
         (enc) => {
+            expect(enc.success).toStrictEqual(true);
             const post = {
-                message: enc,
+                message: enc.message,
             };
 
             const dec = hooks.decryptMessage(post);

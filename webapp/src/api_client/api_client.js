@@ -24,7 +24,11 @@ export default class Client {
      *  @returns {Object} response from api call
      */
     retrievePublicKey = async (userIDs) => {
-        return this.doPost(`${this.url}/pub_keys`, {user_ids: userIDs});
+        try {
+            return this.doPost(`${this.url}/pub_keys`, {user_ids: userIDs});
+        } catch (e) {
+            return null;
+        }
     };
 
     /*

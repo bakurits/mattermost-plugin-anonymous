@@ -69,7 +69,11 @@ export default class Hooks {
      * @returns {Promise<Object>} resolved promise after sending messages to all users in channel
      */
     handlePost = async (commands, args) => {
-        const message = await this.encryptMessage(args.channel_id, commands.join(' '));
+        const encryptedData = await this.encryptMessage(args.channel_id, commands.join(' '));
+        if (encryptedData.success !== true) {
+            return Promise.resolve({error: 'could not encrypt message properly'});
+        }
+        const message = encryptedData.message;
         await this.Client4.createPost({
             channel_id: args.channel_id,
             message,
@@ -82,7 +86,7 @@ export default class Hooks {
     /**
      * @param {string} channelID, channel id
      * @param {Object} post, message to be encrypted
-     * @returns {string} encrypted message
+     * @returns {Object} success status of the operation with encrypted message
      */
     encryptMessage = async (channelID, post) => {
         const users = await this.Client4.getProfilesInChannel(channelID);
@@ -92,6 +96,9 @@ export default class Hooks {
         });
 
         const publicKeysb64 = await this.Client.retrievePublicKey(userIDs);
+        if (publicKeysb64 === null) {
+            return {success: false, message: ''};
+        }
 
         const publicKeys = publicKeysb64.public_keys.map((publicKey) => {
             return Buffer.from(publicKey, 'base64').toString();
@@ -108,7 +115,7 @@ export default class Hooks {
             };
         }));
 
-        return Buffer.from(JSON.stringify(encrypted)).toString('base64');
+        return {success: true, message: Buffer.from(JSON.stringify(encrypted)).toString('base64')};
     };
 
     /**
@@ -202,7 +209,11 @@ export default class Hooks {
         }
         const newPost = post;
         newPost.props = {encrypted: true};
-        newPost.message = await this.encryptMessage(post.channel_id, post.message);
+        const encryptedData = await this.encryptMessage(post.channel_id, post.message);
+        if (encryptedData.success !== true) {
+            return Promise.resolve({error: {message: 'could not encrypt properly'}});
+        }
+        newPost.message = encryptedData.message;
         return Promise.resolve({post: newPost});
     }
 }
