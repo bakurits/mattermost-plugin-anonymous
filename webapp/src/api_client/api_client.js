@@ -21,7 +21,7 @@ export default class Client {
 
     /**
      *  @param {[string]} userIDs
-     *  @returns {Object} response from api call
+     *  @returns {Object| null} response from api call
      */
     retrievePublicKey = async (userIDs) => {
         let res = null;
