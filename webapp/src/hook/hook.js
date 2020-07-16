@@ -107,8 +107,7 @@ export default class Hooks {
                 public_key: Buffer.from(keyString).toString('base64'),
             };
         }));
-
-        return Buffer.from(JSON.stringify(encrypted)).toString('base64');
+        return JSON.stringify(encrypted);
     };
 
     /**
@@ -124,9 +123,12 @@ export default class Hooks {
         if (decrypter === null) {
             return "Message couldn't be decrypted!";
         }
-
-        const messageObject = Array.from(JSON.parse(Buffer.from(message, 'base64').toString()));
-
+        let messageObject;
+        try {
+            messageObject = Array.from(JSON.parse(message));
+        } catch (e) {
+            return "Message couldn't be decrypted!";
+        }
         const myMessages = messageObject.filter((value) => {
             return (value.public_key === decrypter.PublicKey);
         });
