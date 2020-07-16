@@ -25,7 +25,8 @@ export default class Client {
      */
     retrievePublicKey = async (userIDs) => {
         try {
-            return this.doPost(`${this.url}/pub_keys`, {user_ids: userIDs});
+            const res = await this.doPost(`${this.url}/pub_keys`, {user_ids: userIDs});
+            return res;
         } catch (e) {
             return null;
         }
