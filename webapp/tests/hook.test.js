@@ -1,4 +1,3 @@
-
 import 'mattermost-webapp/tests/setup';
 import {generateKeyPair, LOCAL_STORAGE_KEY} from '../src/encrypt/key_manager';
 import {Key} from '../src/encrypt/key';
@@ -38,7 +37,6 @@ test('hook encrypt/decrypt test', () => {
 });
 
 test('hook handlePostCommand error test', () => {
-
     Client.retrievePublicKey.mockImplementationOnce(() =>
         Promise.resolve({public_keys: null})
     );
@@ -53,7 +51,6 @@ test('hook handlePostCommand error test', () => {
 });
 
 test('hook handlePostCommand success test', () => {
-
     Client.retrievePublicKey.mockImplementationOnce(() =>
         Promise.resolve({public_keys: []})
     );
@@ -68,7 +65,7 @@ test('hook handlePostCommand success test', () => {
 });
 
 test('hook messageWillBePostedHook test', () => {
-    var post = {'channel_id' : '123', 'message' : 'test message'}
+    const post = {channel_id: '123', message: 'test message'};
     const key = generateKeyPair();
     const publicKey = new Key(key, null).PublicKey;
     const privateKey = new Key(null, key).PrivateKey;
@@ -78,12 +75,12 @@ test('hook messageWillBePostedHook test', () => {
         Promise.resolve({public_keys: [publicKey]})
     );
 
-    const props = {"encrypted": true}
-    
+    const props = {encrypted: true};
+
     hooks.messageWillBePostedHook(post).then(
         (result) => {
-            expect(result['post'].channel_id).toEqual("123");
-            expect(result['post'].props).toEqual(props);
+            expect(result.post.channel_id).toEqual('123');
+            expect(result.post.props).toEqual(props);
         }
     );
 });
