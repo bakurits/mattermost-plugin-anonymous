@@ -1,9 +1,9 @@
-
 import {generateAndStoreKeyPair, loadKeyFromLocalStorage, storePrivateKey} from '../encrypt/key_manager';
 import {decrypt as aesDecrypt, encrypt as aesEncrypt} from '../encrypt/aes.js';
 import {sendEphemeralPost} from '../actions/actions';
 import {newFromPrivateKey, newFromPublicKey} from '../encrypt/key';
 import Cache from '../cache';
+import Constants from '../constants';
 
 export default class Hooks {
     constructor(store, settings, client4, client) {
@@ -68,11 +68,26 @@ export default class Hooks {
      * @param {object} args, contextArgs object
      * @returns {Promise<Object>} resolved promise after sending messages to all users in channel
      */
-    handlePost = async (commands, args) => {
-        await this.encryptMessage(args.channel_id, commands.join(' '));
+    handlePostCommand = async (commands, args) => {
+        const encryptedData = await this.encryptMessage(args.channel_id, commands.join(' '));
+        if (encryptedData.success !== true) {
+            return Promise.resolve({error: 'could not encrypt message properly'});
+        }
+        const message = encryptedData.message;
+        await this.Client4.createPost({
+            channel_id: args.channel_id,
+            message,
+            props: {encrypted: true},
+        });
+
         return Promise.resolve({});
     };
 
+    /**
+     * @param {string} channelID, channel id
+     * @param {Object} post, message to be encrypted
+     * @returns {Object} success status of the operation with encrypted message
+     */
     encryptMessage = async (channelID, post) => {
         const users = await this.Client4.getProfilesInChannel(channelID);
 
@@ -81,6 +96,9 @@ export default class Hooks {
         });
 
         const publicKeysb64 = await this.Client.retrievePublicKey(userIDs);
+        if (publicKeysb64 === null) {
+            return {success: false, message: ''};
+        }
 
         const publicKeys = publicKeysb64.public_keys.map((publicKey) => {
             return Buffer.from(publicKey, 'base64').toString();
@@ -97,14 +115,7 @@ export default class Hooks {
             };
         }));
 
-        const message = Buffer.from(JSON.stringify(encrypted)).toString('base64');
-        await this.Client4.createPost({
-            channel_id: channelID,
-            message,
-            props: {encrypted: true},
-        });
-
-        return message;
+        return {success: true, message: JSON.stringify(encrypted)};
     };
 
     /**
@@ -120,9 +131,12 @@ export default class Hooks {
         if (decrypter === null) {
             return "Message couldn't be decrypted!";
         }
-
-        const messageObject = Array.from(JSON.parse(Buffer.from(message, 'base64').toString()));
-
+        let messageObject;
+        try {
+            messageObject = Array.from(JSON.parse(message));
+        } catch (e) {
+            return "Message couldn't be decrypted!";
+        }
         const myMessages = messageObject.filter((value) => {
             return (value.public_key === decrypter.PublicKey);
         });
@@ -157,7 +171,7 @@ export default class Hooks {
         case 'keypair':
             return this.handleKeyPair(commands.splice(2), contextArgs);
         case 'a':
-            return this.handlePost(commands.splice(2), contextArgs);
+            return this.handlePostCommand(commands.splice(2), contextArgs);
         default:
             break;
         }
@@ -186,5 +200,23 @@ export default class Hooks {
         const decryptedMessage = this.decryptMessage(post);
         Cache.put(id, decryptedMessage);
         return decryptedMessage;
+    }
+
+    /**
+     * @param {Object} post, post to be processed
+     * @returns {object} processed post
+     */
+    messageWillBePostedHook = async (post) => {
+        if (this.store.getState()[Constants.REDUCER_ID].encryptionState !== true) {
+            return Promise.resolve({post});
+        }
+        const newPost = post;
+        newPost.props = {encrypted: true};
+        const encryptedData = await this.encryptMessage(post.channel_id, post.message);
+        if (encryptedData.success !== true) {
+            return Promise.resolve({error: {message: 'could not encrypt properly'}});
+        }
+        newPost.message = encryptedData.message;
+        return Promise.resolve({post: newPost});
     }
 }

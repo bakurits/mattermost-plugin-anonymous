@@ -1,7 +1,7 @@
 
 const Client = {
     retrievePublicKey: jest.fn(async () => {
-        return Promise.resolve({});
+        return Promise.resolve({public_keys: []});
     }),
 };
 
