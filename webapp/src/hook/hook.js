@@ -68,7 +68,7 @@ export default class Hooks {
      * @param {object} args, contextArgs object
      * @returns {Promise<Object>} resolved promise after sending messages to all users in channel
      */
-    handlePost = async (commands, args) => {
+    handlePostCommand = async (commands, args) => {
         const encryptedData = await this.encryptMessage(args.channel_id, commands.join(' '));
         if (encryptedData.success !== true) {
             return Promise.resolve({error: 'could not encrypt message properly'});
@@ -171,7 +171,7 @@ export default class Hooks {
         case 'keypair':
             return this.handleKeyPair(commands.splice(2), contextArgs);
         case 'a':
-            return this.handlePost(commands.splice(2), contextArgs);
+            return this.handlePostCommand(commands.splice(2), contextArgs);
         default:
             break;
         }
