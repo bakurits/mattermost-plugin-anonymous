@@ -57,6 +57,27 @@ export default class Client {
         });
     }
 
+    /*
+     *  @param {Object} post
+     *  @returns {Object} response from Client4
+     */
+    createPost = async (post) => {
+        return Client4.createPost(post);
+    }
+
+    /*
+     *  @param {string} channelID
+     *  @returns {Object} response from Client4
+     */
+    getProfilesInChannel = async (channelID) => {
+        return Client4.getProfilesInChannel(channelID);
+    }
+
+    /**
+     *  @param {string} url, api endpoint
+     *  @param {Object} headers, request headers
+     *  @returns {Object} response from api call
+     */
     doGet = async (url, headers = {}) => {
         const opts = Client4.getOptions(headers);
         const options = {
