@@ -4,11 +4,10 @@ import {Key} from '../src/encrypt/key';
 
 import Hooks from '../src/hook/hook';
 
-import Client4 from '../__mocks__/Client4';
 import Client from '../__mocks__/Client';
 import Store from '../__mocks__/Store';
 
-const hooks = new Hooks(Store, null, Client4, Client);
+const hooks = new Hooks(Store, null, Client);
 
 test('hook encrypt/decrypt test', () => {
     const key = generateKeyPair();

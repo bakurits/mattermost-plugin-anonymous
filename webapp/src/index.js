@@ -1,6 +1,4 @@
 import React from 'react';
-import {Client4} from 'mattermost-redux/client';
-
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/channels';
 
 import Client from 'api_client';
@@ -30,7 +28,7 @@ export default class Plugin {
             'toggle encryption'
         );
 
-        const hook = new Hooks(store, null, Client4, Client);
+        const hook = new Hooks(store, null, Client);
 
         registry.registerMessageWillBePostedHook(hook.messageWillBePostedHook);
         registry.registerSlashCommandWillBePostedHook(hook.slashCommandWillBePostedHook);

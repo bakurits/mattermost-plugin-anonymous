@@ -6,10 +6,9 @@ import Cache from '../cache';
 import Constants from '../constants';
 
 export default class Hooks {
-    constructor(store, settings, client4, client) {
+    constructor(store, settings, client) {
         this.store = store;
         this.settings = settings;
-        this.Client4 = client4;
         this.Client = client;
     }
 
@@ -74,7 +73,7 @@ export default class Hooks {
             return Promise.resolve({error: 'could not encrypt message properly'});
         }
         const message = encryptedData.message;
-        await this.Client4.createPost({
+        await this.Client.createPost({
             channel_id: args.channel_id,
             message,
             props: {encrypted: true},
@@ -89,7 +88,7 @@ export default class Hooks {
      * @returns {Object} success status of the operation with encrypted message
      */
     encryptMessage = async (channelID, post) => {
-        const users = await this.Client4.getProfilesInChannel(channelID);
+        const users = await this.Client.getProfilesInChannel(channelID);
 
         const userIDs = users.map((user) => {
             return user.id;
