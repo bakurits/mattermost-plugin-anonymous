@@ -15,7 +15,7 @@ test('hook encrypt/decrypt test', () => {
     const privateKey = new Key(null, key).PrivateKey;
     localStorage.setItem(LOCAL_STORAGE_KEY, privateKey);
 
-    Client.retrievePublicKey.mockImplementationOnce(() =>
+    Client.retrievePublicKeys.mockImplementationOnce(() =>
         Promise.resolve({public_keys: [publicKey]})
     );
 
@@ -36,7 +36,7 @@ test('hook encrypt/decrypt test', () => {
 });
 
 test('hook handlePostCommand error test', () => {
-    Client.retrievePublicKey.mockImplementationOnce(() =>
+    Client.retrievePublicKeys.mockImplementationOnce(() =>
         Promise.resolve({public_keys: null})
     );
 
@@ -50,7 +50,7 @@ test('hook handlePostCommand error test', () => {
 });
 
 test('hook handlePostCommand success test', () => {
-    Client.retrievePublicKey.mockImplementationOnce(() =>
+    Client.retrievePublicKeys.mockImplementationOnce(() =>
         Promise.resolve({public_keys: []})
     );
 
@@ -70,7 +70,7 @@ test('hook messageWillBePostedHook test', () => {
     const privateKey = new Key(null, key).PrivateKey;
     localStorage.setItem(LOCAL_STORAGE_KEY, privateKey);
 
-    Client.retrievePublicKey.mockImplementationOnce(() =>
+    Client.retrievePublicKeys.mockImplementationOnce(() =>
         Promise.resolve({public_keys: [publicKey]})
     );
 
