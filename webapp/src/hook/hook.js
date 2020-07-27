@@ -140,7 +140,7 @@ export default class Hooks {
             return (value.public_key === decrypter.PublicKey);
         });
         if (!myMessages || myMessages.length === 0) {
-            return 'Error: Message could not be decrypted!';
+            return 'Message could not be decrypted!';
         }
         const encryptedAESKey = myMessages[0].aes_key;
         const encryptedMessage = myMessages[0].message;
