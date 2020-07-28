@@ -15,6 +15,7 @@ import {handleEncryptionStatusChange, toggleEncryption} from './actions/actions'
 import ChannelChangeListener, {initializeEncryptionStatusForChannel} from './hook/channelChangeListener';
 
 export default class Plugin {
+    // noinspection BadExpressionStatementJS,BadExpressionStatementJS
     initialize(registry, store) {
         registry.registerReducer(reducer);
         this.channelChangeListener = new ChannelChangeListener(store);

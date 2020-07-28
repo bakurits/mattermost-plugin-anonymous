@@ -2,8 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {FormattedMessage} from 'react-intl';
 
-import SVGs from '../constants/SVGs';
-
 const IconPresenter = ({encryptionEnabled}) => {
     const style = {
         position: 'relative',
@@ -18,8 +16,13 @@ const IconPresenter = ({encryptionEnabled}) => {
                 <span
                     style={style}
                     aria-label={ariaLabel}
-                    dangerouslySetInnerHTML={{__html: encryptionEnabled ? SVGs.ANONYMOUS_ICON_ENABLED : SVGs.ANONYMOUS_ICON_DISABLED}}
-                />
+                >
+                    <img
+                        src='/public/Images/icon.svg'
+                        style={encryptionEnabled ? '' : 'fill: #2389d7'}
+                        alt='Image not loaded'
+                    />
+                </span>
             )}
         </FormattedMessage>
     );

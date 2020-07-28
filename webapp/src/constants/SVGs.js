@@ -1,3 +1,4 @@
+
 const anonymousIconStart = "<svg xmlns='http://www.w3.org/2000/svg' ";
 const anonymousIconEnd = " x='0px' y='0px' width='25' height='25'" +
     " viewBox='0 0 1000 1000' enable-background='new 0 0 1000 1000' xml:space='preserve'> " +
@@ -25,6 +26,9 @@ const anonymousIconEnd = " x='0px' y='0px' width='25' height='25'" +
     '5-473.1l-2.4-407.6h-84.9h-84.9l-4.9,407.6c-2.4,402.8-2.4,410.1-63.1,473.1c-131,138.3-138.3,276.6-21.8,400.' +
     "3C4908.7,159.7,5059.1,162.2,5163.4,74.8z'/></g></g> </svg>";
 const fillGreen = "style='fill: #2389d7'";
+
+
+var element = new HTMLElement();
 
 export default {
     ANONYMOUS_ICON_ENABLED: anonymousIconStart + fillGreen + anonymousIconEnd,
