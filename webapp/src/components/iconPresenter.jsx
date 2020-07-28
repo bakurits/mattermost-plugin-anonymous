@@ -19,7 +19,7 @@ const IconPresenter = ({encryptionEnabled}) => {
                 >
                     <img
                         src='/public/Images/icon.svg'
-                        style={encryptionEnabled ? '' : 'fill: #2389d7'}
+                        style={{fill: encryptionEnabled ? '' : '#2389d7'}}
                         alt='Image not loaded'
                     />
                 </span>

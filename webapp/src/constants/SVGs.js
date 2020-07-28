@@ -27,9 +27,6 @@ const anonymousIconEnd = " x='0px' y='0px' width='25' height='25'" +
     "3C4908.7,159.7,5059.1,162.2,5163.4,74.8z'/></g></g> </svg>";
 const fillGreen = "style='fill: #2389d7'";
 
-
-var element = new HTMLElement();
-
 export default {
     ANONYMOUS_ICON_ENABLED: anonymousIconStart + fillGreen + anonymousIconEnd,
     ANONYMOUS_ICON_DISABLED: anonymousIconStart + anonymousIconEnd,
