@@ -2,6 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {FormattedMessage} from 'react-intl';
 
+const Icon = require('/public/Images/icon.svg');
+
 const IconPresenter = ({encryptionEnabled}) => {
     const style = {
         position: 'relative',
@@ -18,7 +20,7 @@ const IconPresenter = ({encryptionEnabled}) => {
                     aria-label={ariaLabel}
                 >
                     <img
-                        src='/public/Images/icon.svg'
+                        src={Icon}
                         style={{fill: encryptionEnabled ? '' : '#2389d7'}}
                         alt='Image not loaded'
                     />
