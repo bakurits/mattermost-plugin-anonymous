@@ -108,17 +108,20 @@ func (h *handler) handleGetPublicKeys() handlerWithUserID {
 		pubKeys := make([]string, 0)
 
 		if len(userIDs) == 0 {
-			h.jsonError(w, Error{Message: "public key doesn't exists", StatusCode: http.StatusNoContent})
+			h.jsonError(w, Error{Message: "User id array is empty", StatusCode: http.StatusNoContent})
 			return
 		}
 
 		for _, userID := range userIDs {
 			pubKey, err := h.an.GetPublicKey(userID)
-			if err != nil || pubKey == nil {
-				h.jsonError(w, Error{Message: "public key doesn't exists", StatusCode: http.StatusNoContent})
-				return
+			if err == nil && pubKey != nil {
+				pubKeys = append(pubKeys, pubKey.String())
 			}
-			pubKeys = append(pubKeys, pubKey.String())
+		}
+
+		if len(pubKeys) == 0 {
+			h.jsonError(w, Error{Message: "No public keys were found for given users", StatusCode: http.StatusNoContent})
+			return
 		}
 
 		h.respondWithJSON(w, response{PublicKeys: pubKeys})

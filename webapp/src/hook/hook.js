@@ -94,7 +94,7 @@ export default class Hooks {
             return user.id;
         });
 
-        const publicKeysb64 = await this.Client.retrievePublicKey(userIDs);
+        const publicKeysb64 = await this.Client.retrievePublicKeys(userIDs);
         if (publicKeysb64 === null) {
             return {success: false, message: ''};
         }
@@ -140,7 +140,7 @@ export default class Hooks {
             return (value.public_key === decrypter.PublicKey);
         });
         if (!myMessages || myMessages.length === 0) {
-            return '';
+            return 'Message could not be decrypted!';
         }
         const encryptedAESKey = myMessages[0].aes_key;
         const encryptedMessage = myMessages[0].message;

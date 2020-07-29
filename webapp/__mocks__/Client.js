@@ -1,6 +1,6 @@
 
 const Client = {
-    retrievePublicKey: jest.fn(async () => {
+    retrievePublicKeys: jest.fn(async () => {
         return Promise.resolve({public_keys: []});
     }),
     getProfilesInChannel: jest.fn(async () => {

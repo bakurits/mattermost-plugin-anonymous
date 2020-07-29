@@ -23,7 +23,7 @@ export default class Client {
      *  @param {[string]} userIDs
      *  @returns {Object| null} response from api call
      */
-    retrievePublicKey = async (userIDs) => {
+    retrievePublicKeys = async (userIDs) => {
         let res = null;
         try {
             res = await this.doPost(`${this.url}/pub_keys`, {user_ids: userIDs});
