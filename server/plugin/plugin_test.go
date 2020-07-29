@@ -83,7 +83,7 @@ func Test_plugin_ServeHTTP_GetPublicKey(t *testing.T) {
 				StatusCode:   http.StatusNoContent,
 				ResponseType: test.ContentTypeJSON,
 				Body: api.Error{
-					Message:    "public key doesn't exists",
+					Message:    "No public keys were found for given users",
 					StatusCode: http.StatusNoContent,
 				},
 			},
