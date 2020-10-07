@@ -44,7 +44,7 @@ export default class Hooks {
             }
 
             privateKeyString = commands[1];
-            privateKey = newFromPrivateKey(privateKeyString);
+            privateKey = newFromPrivateKey(atob(privateKeyString));
             if (!key) {
                 return Promise.resolve({error: {message: 'Invalid private key'}});
             }
