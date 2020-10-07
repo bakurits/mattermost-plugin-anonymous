@@ -18,7 +18,6 @@ export default class Hooks {
      * @returns {Promise<Object>} object with modified commands or an error message
      */
     handleKeyPair = async (commands, args) => {
-        let key;
         let response;
         let privateKey;
         let privateKeyString;
@@ -44,8 +43,8 @@ export default class Hooks {
             }
 
             privateKeyString = commands[1];
-            privateKey = newFromPrivateKey(privateKeyString);
-            if (!key) {
+            privateKey = newFromPrivateKey(atob(privateKeyString));
+            if (!privateKey) {
                 return Promise.resolve({error: {message: 'Invalid private key'}});
             }
 
