@@ -14,6 +14,7 @@ const (
 	helpTextHeader = "###### Mattermost Anonymous Plugin - Slash command help\n"
 	helpText       = `
 * |/anonymous help| - print this help message
+* |/anonymous a [message]| - send message in encrypted form 
 * |/anonymous keypair [action]| - do one of the following actions regarding encryption keypair
   * |action| is one of the following:
     * |--generate| - generates and stores new keypair for encryption
