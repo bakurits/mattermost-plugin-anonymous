@@ -59,7 +59,7 @@
     "webpack-cli": "3.3.5"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "codecov": "^3.6.5",
     "core-js": "3.6.2",
     "eccrypto": "^1.1.3",
