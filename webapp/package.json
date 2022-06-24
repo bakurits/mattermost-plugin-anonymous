@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "codecov": "^3.6.5",
+    "codecov": "^3.8.3",
     "core-js": "3.6.2",
     "eccrypto": "^1.1.3",
     "hybrid-crypto-js": "^0.2.2",
